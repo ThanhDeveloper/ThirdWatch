@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution_Items", "Solution_Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		BannedSymbols.txt = BannedSymbols.txt
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		dotnet-tools.json = dotnet-tools.json
+		xunit.runner.json = xunit.runner.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdWatch.API", "ThirdWatch.API\ThirdWatch.API.csproj", "{97630004-8436-48AF-A639-2E2CB21A370F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdWatch.Application", "ThirdWatch.Application\ThirdWatch.Application.csproj", "{23559876-25D0-4358-B2F1-631CCCB39092}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdWatch.Domain", "ThirdWatch.Domain\ThirdWatch.Domain.csproj", "{C22F4584-064E-4C8A-BCAF-F1393552B2F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdWatch.Infrastructure", "ThirdWatch.Infrastructure\ThirdWatch.Infrastructure.csproj", "{E3B9208D-2BAA-496F-95C3-9AAF87D6E320}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdWatch.Shared", "ThirdWatch.Shared\ThirdWatch.Shared.csproj", "{D76A054E-EC26-477B-AB35-ED01939C2909}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97630004-8436-48AF-A639-2E2CB21A370F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97630004-8436-48AF-A639-2E2CB21A370F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97630004-8436-48AF-A639-2E2CB21A370F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97630004-8436-48AF-A639-2E2CB21A370F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23559876-25D0-4358-B2F1-631CCCB39092}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23559876-25D0-4358-B2F1-631CCCB39092}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23559876-25D0-4358-B2F1-631CCCB39092}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23559876-25D0-4358-B2F1-631CCCB39092}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C22F4584-064E-4C8A-BCAF-F1393552B2F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C22F4584-064E-4C8A-BCAF-F1393552B2F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C22F4584-064E-4C8A-BCAF-F1393552B2F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C22F4584-064E-4C8A-BCAF-F1393552B2F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3B9208D-2BAA-496F-95C3-9AAF87D6E320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3B9208D-2BAA-496F-95C3-9AAF87D6E320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3B9208D-2BAA-496F-95C3-9AAF87D6E320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3B9208D-2BAA-496F-95C3-9AAF87D6E320}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D76A054E-EC26-477B-AB35-ED01939C2909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D76A054E-EC26-477B-AB35-ED01939C2909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D76A054E-EC26-477B-AB35-ED01939C2909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D76A054E-EC26-477B-AB35-ED01939C2909}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {735ED7D6-6E64-49F8-A28C-16AEDE713D1C}
+	EndGlobalSection
+EndGlobal

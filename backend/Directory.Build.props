@@ -1,0 +1,95 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <NuGetAudit>true</NuGetAudit>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+    <!-- Backend code should not rely on globalization: all string comparisons should be non culture aware, see https://github.com/dotnet/runtime/blob/main/docs/design/features/globalization-invariant-mode.md -->
+    <!-- However SQL Server managed driver relies on globalization, see https://github.com/dotnet/SqlClient/issues/220 -->
+    <!-- For that reason we cannot activate the invariant mode globally and need to enforce it for each string comparison call -->
+    <!-- <InvariantGlobalization>true</InvariantGlobalization> -->
+
+    <!-- Currently it is an opt-in feature, see: https://github.com/dotnet/project-system/blob/main/docs/build-acceleration.md -->
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+
+    <!-- See the different Analysis modes here: https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#analysismode -->
+    <!-- We should be strict so either Recommended or AllEnabledByDefault -->
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <Features>strict</Features>
+    <!-- See https://www.meziantou.net/csharp-compiler-strict-mode.htm -->
+    <WarningLevel>9999</WarningLevel>
+    <!-- See https://github.com/dotnet/roslyn/blob/a6013f3213c902c0973b2d371c3007217d610533/docs/compilers/CSharp/Warnversion%20Warning%20Waves.md -->
+    <WarningsNotAsErrors>
+      $(WarningsNotAsErrors),
+      NU1901, <!-- NuGet Audit should only create warnings, it's not defined yet how to handle security vulnerabilities -->
+      NU1902, <!-- NuGet Audit should only create warnings, it's not defined yet how to handle security vulnerabilities -->
+      NU1903, <!-- NuGet Audit should only create warnings, it's not defined yet how to handle security vulnerabilities -->
+    </WarningsNotAsErrors>
+
+    <NoWarn>
+      $(NoWarn),
+
+      AD0001, <!-- Temporarily not a warning, .NET8 SDK has issues -->
+
+      CA1716, <!-- At this point we don't care about other .NET language -->
+
+      <!-- Additional ones when AnalysisMode is set to AllEnabledByDefault -->
+      CA2007, <!-- By default ConfigureAwait is irrelevant with ASP.NET Core since there is no SynchronizationContext -->
+      CA1062, <!-- We don't check parameters which are non nullable reference types against null (at runtime they could be null...) -->
+      CA1724, <!-- Colliding names is fine we disambiguate by namespace. Furthermore GraphQL types, like Query, collide with .NET BCL types -->
+      CA1812, <!-- It suggests removing types which are registered through DI... Open bug at https://github.com/dotnet/roslyn-analyzers/issues/6086 -->
+      CA5394, <!-- In most places the pseudo randomness is more than enough: we don't have security sensitive use cases yet -->
+      CA1034, <!-- Using nested types is subjective we want to leverage it for constants -->
+      CA1822, <!-- To inject Ilogger<T> into mutation -->
+      CA1054, <!-- URI-like properties should not be strings -->
+      CA1056, <!-- URI-like properties should not be strings -->
+      <!-- To tackle -->
+      CA1848, <!-- We should use the LoggerMessage delegates for performance: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1848 -->
+    </NoWarn>
+  </PropertyGroup>
+  <!-- Roslyn bug: https://github.com/dotnet/roslyn/issues/41640
+  Set MSBuild property 'GenerateDocumentationFile' to 'true' in project file to enable IDE0005 (Remove unnecessary usings/imports) on build
+  -->
+  <PropertyGroup>
+    <!--
+      Make sure any documentation comments which are included in code get checked for syntax during the build, but do
+      not report warnings for missing comments.
+      CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'parameter' (but other parameters do)
+      CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
+      CS1712: Type parameter 'type_parameter' has no matching typeparam tag in the XML comment on 'type_or_member' (but other type parameters do)
+    -->
+
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn),1573,1591,1712</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FluentAssertions.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+
+</Project>

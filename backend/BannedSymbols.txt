@@ -1,0 +1,75 @@
+P:System.DateTime.Now;Use timeProvider.GetUtcNow() instead
+P:System.DateTime.UtcNow;Use timeProvider.GetUtcNow() instead
+P:System.DateTimeOffset.Now;Use timeProvider.GetUtcNow() instead
+P:System.DateTimeOffset.UtcNow;Use timeProvider.GetUtcNow() instead
+P:System.DateTimeOffset.DateTime;Use DateTimeOffset.UtcDateTime instead
+M:System.IO.File.GetCreationTime(System.String);Use File.GetCreationTimeUtc instead
+P:System.Globalization.CultureInfo.CurrentCulture;Use CultureInfo.InvariantCulture instead
+
+M:System.Console.Write(System.Int32);Don't use Console.Write for logging.
+M:System.Console.Write(System.Int64);Don't use Console.Write for logging.
+M:System.Console.Write(System.UInt32);Don't use Console.Write for logging.
+M:System.Console.Write(System.UInt64);Don't use Console.Write for logging.
+M:System.Console.Write(System.Boolean);Don't use Console.Write for logging.
+M:System.Console.Write(System.Char);Don't use Console.Write for logging.
+M:System.Console.Write(System.Char[]);Don't use Console.Write for logging.
+M:System.Console.Write(System.Char[],System.Int32,Symstem.Int32);Don't use Console.Write for logging.
+M:System.Console.Write(System.Single);Don't use Console.Write for logging.
+M:System.Console.Write(System.Double);Don't use Console.Write for logging.
+M:System.Console.Write(System.Object);Don't use Console.Write for logging.
+M:System.Console.Write(System.String);Don't use Console.Write for logging.
+M:System.Console.Write(System.String,System.Object);Don't use Console.Write for logging.
+M:System.Console.Write(System.String,System.Object,System.Object);Don't use Console.Write for logging.
+M:System.Console.Write(System.String,System.Object,System.Object,System.Object);Don't use Console.Write for logging.
+M:System.Console.Write(System.String,System.Object[]);Don't use Console.Write for logging.
+M:System.Console.Write(System.Decimal);Don't use Console.Write for logging.
+
+M:System.Console.WriteLine;Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Int32);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Int64);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.UInt32);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.UInt64);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Boolean);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Char);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Char[]);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Char[],System.Int32,System.Int32);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Single);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Double);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Object);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.String);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.String,System.Object);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.String,System.Object,System.Object);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.String,System.Object,System.Object,System.Object);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.String,System.Object[]);Don't use Console.WriteLine for logging.
+M:System.Console.WriteLine(System.Decimal);Don't use Console.WriteLine for logging.
+
+M:System.Guid.#ctor;Probably meaning to use Guid.NewGuid() instead. If actually wanting empty, use Guid.Empty.
+
+M:System.Runtime.CompilerServices.TaskAwaiter.GetResult();Do not perform sync over async, instead await the Task
+M:System.Runtime.CompilerServices.TaskAwaiter`1.GetResult();Do not perform sync over async, instead await the Task
+
+M:Microsoft.EntityFrameworkCore.DbContext.Add(System.Object);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.Add``1(``0);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddRange(System.Object[]);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddRange(System.Collections.Generic.IEnumerable{System.Object});Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddAsync(System.Object,System.Threading.CancellationToken);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddAsync``1(``0,System.Threading.CancellationToken);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddRangeAsync(System.Object[]);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+M:Microsoft.EntityFrameworkCore.DbContext.AddRangeAsync(System.Collections.Generic.IEnumerable{System.Object},System.Threading.CancellationToken);Don't use DbContext.AddXXX methods instead add on the strongly typed DbSet
+
+M:Microsoft.EntityFrameworkCore.DbSet`1.AddAsync(`0,System.Threading.CancellationToken);Don't use EF AddAsync it is meant for database generated value which are required upfront
+M:Microsoft.EntityFrameworkCore.DbSet`1.AddRangeAsync(`0[]);Don't use EF AddRangeAsync it is meant for database generated value which are required upfront
+M:Microsoft.EntityFrameworkCore.DbSet`1.AddRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken);Don't use EF AddRangeAsync it is meant for database generated value which are required upfront
+
+T:CookieCrumble.SnapshotExtensions;Don't use CookieCrumble.SnapshotExtensions instead rely on our custom extensions: MatchSuccessSnapshot, MatchApplicationErrorSnapshot, ...
+
+N:Newtonsoft.Json;Use System.Text.Json instead
+
+M:Microsoft.Extensions.Logging.LoggerExtensions.BeginScope(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[]);Only use our Scope function which accepts any number of KeyValuePair<string, object>. That is because AppInsights/OTEL only support limited possibilities.
+M:Microsoft.Extensions.Logging.ILogger.BeginScope``1(``0);Only use our Scope function which accepts any number of KeyValuePair<string, object>. That is because AppInsights/OTEL only support limited possibilities.
+
+N:AngleSharp;Don't use anything from AngleSharp library
+
+M:Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder`1.HasConversion``1;Don't use HasConversion from EntityFramework. Use our flavors, from Sofia.Common.Shared.Data.PropertyBuilders. There can be exceptions but these should then be pragma ignored.
+
+T:Quartz.Util.StringExtensions;Don't use the string extensions from Quartz.Util. Just use regular .NET.

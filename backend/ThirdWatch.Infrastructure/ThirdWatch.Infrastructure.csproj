@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\ThirdWatch.Application\ThirdWatch.Application.csproj" />
+    <ProjectReference Include="..\ThirdWatch.Domain\ThirdWatch.Domain.csproj" />
+    <ProjectReference Include="..\ThirdWatch.Shared\ThirdWatch.Shared.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="EFCore.CheckConstraints" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Persistence\Contexts\" />
+    <Folder Include="Persistence\Configurations\" />
+    <Folder Include="Persistence\Repositories\Base\" />
+    <Folder Include="Persistence\Repositories\" />
+    <Folder Include="Persistence\Extensions\" />
+    <Folder Include="Identity\" />
+    <Folder Include="Services\" />
+    <Folder Include="External\Services\" />
+    <Folder Include="External\Clients\" />
+    <Folder Include="Logging\" />
+  </ItemGroup>
+</Project>
