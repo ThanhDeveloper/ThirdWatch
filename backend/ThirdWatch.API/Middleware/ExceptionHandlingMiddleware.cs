@@ -21,7 +21,7 @@ public class ExceptionHandlingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031
         try
         {
             await _next(context);
@@ -31,7 +31,7 @@ public class ExceptionHandlingMiddleware
             _logger.LogError(ex, "An unhandled exception occurred");
             await HandleExceptionAsync(context, ex);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1031
     }
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
@@ -40,30 +40,10 @@ public class ExceptionHandlingMiddleware
 
         var response = exception switch
         {
-            UnauthorizedAccessException => new ApiResponse
-            {
-                Success = false,
-                Message = exception.Message,
-                Errors = ["Authentication failed"]
-            },
-            ArgumentException => new ApiResponse
-            {
-                Success = false,
-                Message = "Invalid argument provided",
-                Errors = [exception.Message]
-            },
-            InvalidOperationException => new ApiResponse
-            {
-                Success = false,
-                Message = "Invalid operation",
-                Errors = [exception.Message]
-            },
-            _ => new ApiResponse
-            {
-                Success = false,
-                Message = "An unexpected error occurred",
-                Errors = ["Internal server error"]
-            }
+            UnauthorizedAccessException => ApiResponse.ErrorResult("Authentication failed", [exception.Message]),
+            ArgumentException => ApiResponse.ErrorResult("Invalid argument provided", [exception.Message]),
+            InvalidOperationException => ApiResponse.ErrorResult("Invalid operation", [exception.Message]),
+            _ => ApiResponse.ErrorResult("An unexpected error occurred", ["Internal server error"])
         };
 
         context.Response.StatusCode = exception switch

@@ -1,58 +1,32 @@
-using MediatR;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using ThirdWatch.API.Models.Requests.Auth;
 using ThirdWatch.Application.DTOs.Auth;
 using ThirdWatch.Application.Handlers.Commands.Auth;
-using ThirdWatch.Shared.Models;
 
 namespace ThirdWatch.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 [Produces("application/json")]
-public class AuthController : ControllerBase
+public class AuthController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<AuthController> _logger;
-
-    public AuthController(IMediator mediator, ILogger<AuthController> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-
     [HttpPost("login")]
-    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), 200)]
-    [ProducesResponseType(typeof(ApiResponse), 400)]
-    [ProducesResponseType(typeof(ApiResponse), 401)]
-    [ProducesResponseType(typeof(ApiResponse), 500)]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
-            return BadRequest(ApiResponse.ErrorResult("Invalid request data", errors));
-        }
-
         try
         {
-            _logger.LogInformation("Login attempt for username: {Username}", request.Username);
+            var command = new LoginCommand(request.Username.Trim().ToLowerInvariant(), request.Password);
 
-            var command = new LoginCommand(request.Username, request.Password);
-
-            var result = await _mediator.Send(command);
-
-            return Ok(ApiResponse<LoginResponseDto>.SuccessResult(result);
+            return Ok(ApiResponse<LoginResponseDto>.SuccessResult(await mediator.Send(command)));
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogError("Login failed for username: {Username}. Reason: {Message}", request.Username, ex.Message);
-
-            return Unauthorized();
+            return Unauthorized(ApiResponse.ErrorResult("Authentication failed", [ex.Message]));
         }
     }
 }

@@ -20,6 +20,7 @@
   <ItemGroup>
     <Folder Include="Persistence\Contexts\" />
     <Folder Include="Persistence\Configurations\" />
+    <Folder Include="Persistence\Migrations\" />
     <Folder Include="Persistence\Repositories\Base\" />
     <Folder Include="Persistence\Repositories\" />
     <Folder Include="Persistence\Extensions\" />

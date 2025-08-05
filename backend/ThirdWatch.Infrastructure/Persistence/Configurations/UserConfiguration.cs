@@ -37,9 +37,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasEnumToStringConversion()
             .IsRequired();
 
-        builder.Property(x => x.RefreshToken)
-            .HasMaxLength(500);
-
         builder.HasIndex(x => x.Username)
             .IsUnique();
 

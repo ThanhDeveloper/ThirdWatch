@@ -61,11 +61,11 @@ public static class ServiceCollectionExtensions
             {
                 Title = "ThirdWatch API",
                 Version = "v1",
-                Description = "ThirdWatch Authentication API",
+                Description = "ThirdWatch Open API",
                 Contact = new OpenApiContact
                 {
                     Name = "ThirdWatch Team",
-                    Email = "support@thirdwatch.com"
+                    Email = "thanhdev98@gmail.com"
                 }
             });
 
