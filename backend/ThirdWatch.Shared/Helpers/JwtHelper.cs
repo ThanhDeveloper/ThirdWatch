@@ -1,39 +1,34 @@
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ThirdWatch.Domain.Entities;
+using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.Shared.Helpers;
 
-public class JwtHelper(IConfiguration configuration)
+public class JwtHelper(IOptions<JwtOptions> options)
 {
     public string GenerateJwtToken(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        byte[] key = Encoding.ASCII.GetBytes(configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"));
 
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Type.ToString()),
-            new("user_id", user.Id.ToString()),
-            new("username", user.Username),
-            new("email", user.Email),
-            new("user_type", user.Type.ToString())
+            new(ClaimTypes.Role, user.Type.ToString())
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = configuration["Jwt:Issuer"],
-            Audience = configuration["Jwt:Audience"]
+            Expires = DateTime.UtcNow.AddHours(options.Value.ExpiryInHours),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(options.Value.Secret)), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = options.Value.Issuer,
+            Audience = options.Value.Audience
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -52,11 +47,11 @@ public class JwtHelper(IConfiguration configuration)
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
-            //ValidateAudience = false,
-            //ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"))),
-            //ValidateLifetime = false
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.Secret)),
+            ValidateLifetime = true
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -76,14 +71,14 @@ public class JwtHelper(IConfiguration configuration)
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            byte[] key = Encoding.ASCII.GetBytes(configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"));
+            byte[] key = Encoding.ASCII.GetBytes(options.Value.Secret);
 
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                //ValidateIssuer = false,
-                //ValidateAudience = false,
+                ValidateAudience = true,
+                ValidateIssuer = true,
                 ClockSkew = TimeSpan.Zero
             }, out var validatedToken);
 

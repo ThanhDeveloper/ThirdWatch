@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using ThirdWatch.API.Models.Requests.Auth;
 using ThirdWatch.Application.DTOs.Auth;
@@ -8,7 +9,7 @@ namespace ThirdWatch.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("login")]
