@@ -1,4 +1,3 @@
-using MediatR;
 using ThirdWatch.Application.DTOs.Auth;
 
 namespace ThirdWatch.Application.Handlers.Commands.Auth;

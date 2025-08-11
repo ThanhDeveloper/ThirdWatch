@@ -18,6 +18,7 @@ public class JwtHelper(IOptions<JwtOptions> options)
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new("user_id", user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
             new(ClaimTypes.Role, user.Type.ToString())
         };
@@ -26,7 +27,7 @@ public class JwtHelper(IOptions<JwtOptions> options)
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(options.Value.ExpiryInHours),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(options.Value.Secret)), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.Secret)), SecurityAlgorithms.HmacSha256Signature),
             Issuer = options.Value.Issuer,
             Audience = options.Value.Audience
         };
@@ -71,14 +72,16 @@ public class JwtHelper(IOptions<JwtOptions> options)
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            byte[] key = Encoding.ASCII.GetBytes(options.Value.Secret);
+            byte[] key = Encoding.UTF8.GetBytes(options.Value.Secret);
 
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateAudience = true,
+                ValidAudience = options.Value.Audience,
                 ValidateIssuer = true,
+                ValidIssuer = options.Value.Issuer,
                 ClockSkew = TimeSpan.Zero
             }, out var validatedToken);
 

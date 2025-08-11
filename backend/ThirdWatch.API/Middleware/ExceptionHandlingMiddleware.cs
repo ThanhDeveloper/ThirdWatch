@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Mime;
 using System.Text.Json;
+using ThirdWatch.Application.Exceptions;
+using ThirdWatch.Domain.Exceptions;
 
 namespace ThirdWatch.API.Middleware;
 
@@ -41,19 +43,23 @@ public class ExceptionHandlingMiddleware
 
         var response = exception switch
         {
-            UnauthorizedAccessException => ApiResponse.ErrorResult("Authentication failed", [exception.Message]),
             ArgumentException => ApiResponse.ErrorResult("Invalid argument provided", [exception.Message]),
             InvalidOperationException => ApiResponse.ErrorResult("Invalid operation", [exception.Message]),
             InvalidDataException => ApiResponse.ErrorResult("Invalid data provided", [exception.Message]),
+            DomainException => ApiResponse.ErrorResult("Domain exception", [exception.Message]),
+            BusinessException => ApiResponse.ErrorResult("Business rule violation", [exception.Message]),
+            NotFoundException => ApiResponse.ErrorResult("Resource not found", [exception.Message]),
             _ => ApiResponse.ErrorResult("An unexpected error occurred", ["Internal server error"])
         };
 
         context.Response.StatusCode = exception switch
         {
-            UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
             ArgumentException => (int)HttpStatusCode.BadRequest,
             InvalidOperationException => (int)HttpStatusCode.BadRequest,
             InvalidDataException => (int)HttpStatusCode.BadRequest,
+            DomainException => (int)HttpStatusCode.BadRequest,
+            BusinessException => (int)HttpStatusCode.BadRequest,
+            NotFoundException => (int)HttpStatusCode.NotFound,
             _ => (int)HttpStatusCode.InternalServerError
         };
 

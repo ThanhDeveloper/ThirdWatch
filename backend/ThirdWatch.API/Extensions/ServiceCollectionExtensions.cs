@@ -9,6 +9,7 @@ using ThirdWatch.Application.Handlers.Handlers.Auth;
 using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Infrastructure.Services;
 using ThirdWatch.Shared.Helpers;
+using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.API.Extensions;
 
@@ -26,13 +27,16 @@ public static class ServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
+                    ?? throw new InvalidOperationException("JWT configuration not found");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.ASCII.GetBytes(configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured"))),
-                    //ValidateIssuer = false,
-                    //ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret)),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions.Audience,
                     ClockSkew = TimeSpan.Zero
                 };
             });
@@ -71,11 +75,12 @@ public static class ServiceCollectionExtensions
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer ' (with space) followed by your token.\r\n\r\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
+                Scheme = "Bearer",
+                BearerFormat = "JWT"
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement

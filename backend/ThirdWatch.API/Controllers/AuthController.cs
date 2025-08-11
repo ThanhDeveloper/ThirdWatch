@@ -15,19 +15,11 @@ public class AuthController(IMediator mediator) : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        try
-        {
-            var command = new LoginCommand(request.Username.Trim().ToLowerInvariant(), request.Password);
+        var command = new LoginCommand(request.Username.Trim().ToLowerInvariant(), request.Password.Trim());
 
-            return Ok(ApiResponse<LoginResponseDto>.SuccessResult(await mediator.Send(command)));
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(ApiResponse.ErrorResult("Authentication failed", [ex.Message]));
-        }
+        return Ok(ApiResponse<LoginResponseDto>.SuccessResult(await mediator.Send(command)));
     }
 }
