@@ -4,12 +4,12 @@ namespace ThirdWatch.Application.Handlers.Commands.Auth;
 
 public class LoginCommand : IRequest<LoginResponseDto>
 {
-    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
 
-    public LoginCommand(string username, string password)
+    public LoginCommand(string email, string password)
     {
-        Username = username;
+        Email = email;
         Password = password;
     }
 }

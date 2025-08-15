@@ -18,7 +18,7 @@ public class AuthController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.InternalServerError)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var command = new LoginCommand(request.Username.Trim().ToLowerInvariant(), request.Password.Trim());
+        var command = new LoginCommand(request.Email.Trim().ToLowerInvariant(), request.Password.Trim());
 
         return Ok(ApiResponse<LoginResponseDto>.SuccessResult(await mediator.Send(command)));
     }

@@ -1,0 +1,11 @@
+using System.Security.Claims;
+
+namespace ThirdWatch.Shared.Extensions;
+
+public static class ClaimsExtensions
+{
+    public static Guid GetUserId(this ClaimsPrincipal principal) =>
+        Guid.TryParse(principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)
+            ? userId
+            : throw new InvalidOperationException($"Claim {ClaimTypes.NameIdentifier} is missing or invalid");
+}

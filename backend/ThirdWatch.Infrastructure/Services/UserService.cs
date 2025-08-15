@@ -9,9 +9,9 @@ namespace ThirdWatch.Infrastructure.Services;
 
 public class UserService(ApplicationDbContext context, ILogger<UserService> logger) : IUserService
 {
-    public async Task<User?> ValidateUserAsync(string username, string password)
+    public async Task<User?> ValidateUserAsync(string email, string password)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
         {
@@ -20,7 +20,7 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
 
         if (!PasswordHelper.VerifyPassword(password, user.PasswordHash))
         {
-            logger.LogWarning("Invalid password for username: {Username}", username);
+            logger.LogWarning("Invalid password for user: {Username}", user.Username);
             return null;
         }
 
@@ -28,7 +28,7 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
     }
 
     public async Task<User?> GetUserByIdAsync(Guid id)
-        => await context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        => await context.Users.FindAsync(id);
 
     public async Task<User?> GetUserByUsernameAsync(string username)
         => await context.Users.FirstOrDefaultAsync(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));

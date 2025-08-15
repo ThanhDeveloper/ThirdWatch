@@ -48,7 +48,7 @@ public class ExceptionHandlingMiddleware
             InvalidDataException => ApiResponse.ErrorResult("Invalid data provided", [exception.Message]),
             DomainException => ApiResponse.ErrorResult("Domain exception", [exception.Message]),
             BusinessException => ApiResponse.ErrorResult("Business rule violation", [exception.Message]),
-            NotFoundException => ApiResponse.ErrorResult("Resource not found", [exception.Message]),
+            NotFoundException => ApiResponse.ErrorResult("Data not found", [exception.Message]),
             _ => ApiResponse.ErrorResult("An unexpected error occurred", ["Internal server error"])
         };
 
