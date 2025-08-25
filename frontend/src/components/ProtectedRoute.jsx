@@ -1,5 +1,7 @@
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import authService from '@/services/authService';
+import apiClient from '@/services/api';
 
 /**
  * ProtectedRoute component to guard routes that require authentication
@@ -8,11 +10,20 @@ import authService from '@/services/authService';
  * @returns {React.ReactNode} Protected route or redirect to login
  */
 const ProtectedRoute = ({ children }) => {
-  const location = useLocation();
-  const isAuthenticated = authService.isAuthenticated();
+const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
 
-  if (!isAuthenticated) {
-    // Redirect to login page with return url
+  useEffect(() => {
+    apiClient.get('/auth/verify')
+      .then(() => setAuthenticated(true))
+      .catch(() => setAuthenticated(false))
+      .finally(() => setLoading(false));
+  }, []);
+
+   if (loading) return <div>Loading...</div>;
+
+  if (!authenticated) {
     return <Navigate to="/auth/sign-in" state={{ from: location }} replace />;
   }
 

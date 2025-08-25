@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
             {
                 var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
                     ?? throw new InvalidOperationException("JWT configuration not found");
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -38,6 +39,27 @@ public static class ServiceCollectionExtensions
                     ValidateAudience = true,
                     ValidAudience = jwtOptions.Audience,
                     ClockSkew = TimeSpan.Zero
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        string? authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+                        if (!string.IsNullOrEmpty(authHeader) &&
+                            authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Token = authHeader["Bearer ".Length..];
+                            return Task.CompletedTask;
+                        }
+
+                        if (context.Request.Cookies.TryGetValue("AccessToken", out string? token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

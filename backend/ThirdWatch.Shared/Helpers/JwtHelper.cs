@@ -1,9 +1,8 @@
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using ThirdWatch.Domain.Entities;
 using ThirdWatch.Shared.Options;
 
@@ -34,14 +33,6 @@ public class JwtHelper(IOptions<JwtOptions> options)
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
-    }
-
-    public string GenerateRefreshToken()
-    {
-        byte[] randomNumber = new byte[64];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(randomNumber);
-        return Convert.ToBase64String(randomNumber);
     }
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
