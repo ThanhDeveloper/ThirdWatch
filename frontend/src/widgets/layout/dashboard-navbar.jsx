@@ -26,6 +26,7 @@ import {
   setOpenSidenav,
 } from '@/context';
 import authService from '@/services/authService';
+import userService from '@/services/userService';
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -33,7 +34,7 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const [layout, page] = pathname.split('/').filter((el) => el !== '');
   
-  const currentUser = authService.getCurrentUser();
+  const currentUser = userService.getCurrentUser();
 
   const handleLogout = () => {
     authService.logout();

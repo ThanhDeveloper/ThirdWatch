@@ -2,7 +2,15 @@ import PropTypes from "prop-types";
 import { Typography } from "@material-tailwind/react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
-export function Footer({ brandName, brandLink, routes }) {
+export function Footer({   
+  brandName = "Creative Tim",
+  brandLink = "https://www.creative-tim.com",
+  routes = [
+    { name: "Creative Tim", path: "https://www.creative-tim.com" },
+    { name: "About Us", path: "https://www.creative-tim.com/presentation" },
+    { name: "Blog", path: "https://www.creative-tim.com/blog" },
+    { name: "License", path: "https://www.creative-tim.com/license" },
+  ], }) {
   const year = new Date().getFullYear();
 
   return (
@@ -39,17 +47,6 @@ export function Footer({ brandName, brandLink, routes }) {
     </footer>
   );
 }
-
-Footer.defaultProps = {
-  brandName: "Creative Tim",
-  brandLink: "https://www.creative-tim.com",
-  routes: [
-    { name: "Creative Tim", path: "https://www.creative-tim.com" },
-    { name: "About Us", path: "https://www.creative-tim.com/presentation" },
-    { name: "Blog", path: "https://www.creative-tim.com/blog" },
-    { name: "License", path: "https://www.creative-tim.com/license" },
-  ],
-};
 
 Footer.propTypes = {
   brandName: PropTypes.string,
