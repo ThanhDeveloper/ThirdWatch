@@ -1,0 +1,23 @@
+{
+    "cursor.ai.rules": [
+        "Always understand the project structure before making changes",
+        "All code must be responsive and mobile-first",
+        "Read existing code patterns before implementing new features",
+        "Use Material Tailwind React components consistently",
+        "Follow established authentication and routing patterns",
+        "Implement proper error handling and user feedback",
+        "Test on multiple devices and screen sizes",
+        "Write clean, maintainable, and well-documented code"
+    ],
+    "cursor.ai.context": {
+        "includeProjectFiles": true,
+        "includeGitHistory": true,
+        "maxContextLength": 8000
+    },
+    "cursor.ai.behavior": {
+        "alwaysReadCodebase": true,
+        "preferExistingPatterns": true,
+        "validateResponsiveDesign": true,
+        "checkAccessibility": true
+    }
+}

@@ -15,14 +15,14 @@ export function Dashboard() {
   const { sidenavType } = controller;
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50">
+    <div className="min-h-screen bg-blue-gray-50/50 flex">
       <Sidenav
         routes={routes}
         brandImg={
           sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
         }
       />
-      <div className="p-4 xl:ml-80">
+      <div className="flex-1 flex flex-col xl:ml-80">
         <DashboardNavbar />
         <Configurator />
         <IconButton
@@ -34,18 +34,30 @@ export function Dashboard() {
         >
           <Cog6ToothIcon className="h-5 w-5" />
         </IconButton>
-        <Routes>
-          {routes.map(
-            ({ layout, pages }) =>
-              layout === "dashboard" &&
-              pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} />
-              ))
-          )}
-        </Routes>
-        <div className="text-blue-gray-600">
+        
+        {/* Main content area - grows to fill available space */}
+        <main className="flex-1 p-4">
+          <Routes>
+            {routes.map(
+              ({ layout, pages }) =>
+                layout === "dashboard" &&
+                pages.map(({ path, element, children }) => {
+                  if (children && children.length > 0) {
+                    return children.map(({ path: childPath, element: childElement }) => (
+                      <Route key={childPath} path={childPath} element={childElement} />
+                    ));
+                  } else {
+                    return <Route key={path} path={path} element={element} />;
+                  }
+                })
+            )}
+          </Routes>
+        </main>
+        
+        {/* Footer - always at bottom */}
+        <footer className="text-blue-gray-600 mt-auto">
           <Footer />
-        </div>
+        </footer>
       </div>
     </div>
   );

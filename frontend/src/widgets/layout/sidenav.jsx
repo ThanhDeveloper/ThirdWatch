@@ -1,12 +1,14 @@
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { XMarkIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   IconButton,
   Typography,
+  Collapse,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useState } from "react";
 
 export function Sidenav({
   brandName = "Material Tailwind React",
@@ -15,6 +17,8 @@ export function Sidenav({
 }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
+  const location = useLocation();
+  const [openMenus, setOpenMenus] = useState({});
 
   const sidenavTypes = {
     dark: "bg-gradient-to-br from-gray-800 to-gray-900",
@@ -33,6 +37,23 @@ export function Sidenav({
   const safeSidenavColor = supportedColors.includes(sidenavColor)
     ? sidenavColor
     : "blue-gray";
+
+  // Toggle menu function
+  const toggleMenu = (menuName) => {
+    setOpenMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }));
+  };
+
+  // Check if a menu should be open based on current location
+  const isMenuOpen = (menuName, children) => {
+    if (openMenus[menuName] !== undefined) {
+      return openMenus[menuName];
+    }
+    // Auto-open if current location matches any child path
+    return children?.some(child => location.pathname.includes(child.path)) || false;
+  };
 
   return (
     <aside
@@ -74,34 +95,97 @@ export function Sidenav({
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => (
-              <li key={name}>
-                <NavLink to={`/${layout}${path}`}>
-                  {({ isActive }) => (
-                    <Button
-                      variant={isActive ? "gradient" : "text"}
-                      color={
-                        isActive
-                          ? safeSidenavColor
-                          : sidenavType === "dark"
-                            ? "white"
-                            : "blue-gray"
-                      }
-                      className="flex items-center gap-4 px-4 capitalize"
-                      fullWidth
-                    >
-                      {icon}
-                      <Typography
-                        color="inherit"
-                        className="font-medium capitalize"
+            {pages.map(({ icon, name, path, children }) => {
+              const hasChildren = children && children.length > 0;
+              const isOpen = isMenuOpen(name, children);
+              
+              return (
+                <li key={name}>
+                  {hasChildren ? (
+                    <>
+                      <Button
+                        variant="text"
+                        color={sidenavType === "dark" ? "white" : "blue-gray"}
+                        className="flex items-center justify-between gap-4 px-4 capitalize w-full"
+                        onClick={() => toggleMenu(name)}
                       >
-                        {name}
-                      </Typography>
-                    </Button>
+                        <div className="flex items-center gap-4">
+                          {icon}
+                          <Typography
+                            color="inherit"
+                            className="font-medium capitalize"
+                          >
+                            {name}
+                          </Typography>
+                        </div>
+                        {isOpen ? (
+                          <ChevronDownIcon className="h-4 w-4" />
+                        ) : (
+                          <ChevronRightIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Collapse open={isOpen}>
+                        <ul className="ml-4 mt-2 space-y-1">
+                          {children.map(({ icon: childIcon, name: childName, path: childPath }) => (
+                            <li key={childName}>
+                              <NavLink to={`/${layout}${childPath}`}>
+                                {({ isActive }) => (
+                                  <Button
+                                    variant={isActive ? "gradient" : "text"}
+                                    color={
+                                      isActive
+                                        ? safeSidenavColor
+                                        : sidenavType === "dark"
+                                          ? "white"
+                                          : "blue-gray"
+                                    }
+                                    className="flex items-center gap-4 px-4 capitalize text-sm"
+                                    fullWidth
+                                  >
+                                    {childIcon}
+                                    <Typography
+                                      color="inherit"
+                                      className="font-medium capitalize"
+                                    >
+                                      {childName}
+                                    </Typography>
+                                  </Button>
+                                )}
+                              </NavLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </Collapse>
+                    </>
+                  ) : (
+                    <NavLink to={`/${layout}${path}`}>
+                      {({ isActive }) => (
+                        <Button
+                          variant={isActive ? "gradient" : "text"}
+                          color={
+                            isActive
+                              ? safeSidenavColor
+                              : sidenavType === "dark"
+                                ? "white"
+                                : "blue-gray"
+                          }
+                          className="flex items-center gap-4 px-4 capitalize"
+                          fullWidth
+                        >
+                          {icon}
+                          <Typography
+                            color="inherit"
+                            className="font-medium capitalize"
+                          >
+                            {name}
+                          </Typography>
+                        </Button>
+                      )}
+                    </NavLink>
                   )}
-                </NavLink>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         ))}
       </div>
