@@ -15,7 +15,6 @@ builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilt
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddEndpointsApiExplorer();
 
-//add option config
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 
 builder.Services.AddCors(options =>

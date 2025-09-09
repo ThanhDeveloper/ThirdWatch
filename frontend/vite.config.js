@@ -5,7 +5,9 @@ import mkcert from 'vite-plugin-mkcert'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), mkcert()],
+  plugins: [react({
+      include: "**/*.{jsx,tsx}",
+    }), mkcert()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -19,5 +21,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+  },
+   esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.[jt]sx?$/,
+    exclude: [],
   },
 });
