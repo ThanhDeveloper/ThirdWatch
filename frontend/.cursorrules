@@ -123,3 +123,4 @@ const handleSubmit = async () => {
 - Add loading states and user feedback
 - Follow responsive design principles
 - Write maintainable and readable code
+- Your code must be enterprise standard. Minimum level senior or above

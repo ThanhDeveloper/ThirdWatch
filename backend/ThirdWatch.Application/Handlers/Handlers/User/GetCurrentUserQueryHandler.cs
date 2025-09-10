@@ -10,6 +10,6 @@ public class GetCurrentUserQueryHandler(IUserService userService) : IRequestHand
         var user = await userService.GetUserByIdAsync(request.UserId)
             ?? throw new NotFoundException($"User not found");
 
-        return new UserResponseDto(user.Username, user.Email);
+        return new UserResponseDto(user.Username, user.Email, user.ProfilePictureUrl);
     }
 }

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { Typography } from "@material-tailwind/react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
-export function Footer({   
+export function Footer({
   brandName = "ThirdWatch",
   brandLink = "https://www.creative-tim.com",
   routes = [
@@ -26,7 +26,6 @@ export function Footer({
           >
             {brandName}
           </a>{" "}
-          for a better web.
         </Typography>
         <ul className="flex items-center gap-4">
           {routes.map(({ name, path }) => (

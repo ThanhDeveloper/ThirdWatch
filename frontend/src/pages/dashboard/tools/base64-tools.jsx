@@ -145,7 +145,17 @@ function Panel({ mode, input, setInput, output, onAction, onCopy, onDownload, on
         <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="space-y-3">
-                    <Typography variant="small" color="blue-gray" className="font-medium">{title}</Typography>
+                    <div className="flex items-center justify-between">
+                        <Typography variant="small" color="blue-gray" className="font-medium">{title}</Typography>
+                        <div className="flex gap-2 invisible">
+                            <Button size="sm" variant="outlined" className="flex items-center gap-2">
+                                <ClipboardDocumentIcon className="h-4 w-4" /> Copy
+                            </Button>
+                            <Button size="sm" variant="outlined" className="flex items-center gap-2">
+                                <ArrowDownTrayIcon className="h-4 w-4" /> Download
+                            </Button>
+                        </div>
+                    </div>
                     <Textarea
                         rows={10}
                         value={input}

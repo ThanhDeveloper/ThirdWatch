@@ -15,7 +15,9 @@ declare @data nvarchar(max) = N'[
         "isExternal": false,
         "createdAt": "2025-08-05T00:00:00.000Z",
         "lastLoginAt": "2025-08-05T00:00:00.000Z",
-        "isDeleted": false
+        "isDeleted": false,
+        "profilePictureUrl": "https://i.pinimg.com/736x/a1/fa/68/a1fa6803ce323fa515e247b51cd970cc.jpg",
+        "loginProvider": "Internal"
     }
 ]';
 
@@ -37,7 +39,9 @@ WITH (
     [IsExternal] NVARCHAR(MAX) '$.isExternal',
     [CreatedAt] NVARCHAR(MAX) '$.createdAt',
     [LastLoginAt] NVARCHAR(MAX) '$.lastLoginAt',
-    [IsDeleted] NVARCHAR(MAX) '$.isDeleted'
+    [IsDeleted] NVARCHAR(MAX) '$.isDeleted',
+    [ProfilePictureUrl] NVARCHAR(MAX) '$.profilePictureUrl',
+    [LoginProvider] NVARCHAR(MAX) '$.loginProvider'
 );
 
 -- use merge transact to update data
@@ -56,7 +60,9 @@ WHEN MATCHED THEN
         [IsExternal] = source.[IsExternal],
         [CreatedAt] = source.[CreatedAt],
         [LastLoginAt] = source.[LastLoginAt],
-        [IsDeleted] = source.[IsDeleted]
+        [IsDeleted] = source.[IsDeleted],
+        [ProfilePictureUrl] = source.[ProfilePictureUrl],
+        [LoginProvider] = source.[LoginProvider]
 WHEN NOT MATCHED THEN
-    INSERT ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [Status], [Type], [IsExternal], [CreatedAt], [LastLoginAt], [IsDeleted])
-    VALUES (source.[Id], source.[Username], source.[Email], source.[PasswordHash], source.[FirstName], source.[LastName], source.[Status], source.[Type], source.[IsExternal], source.[CreatedAt], source.[LastLoginAt], source.[IsDeleted]);
+    INSERT ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [Status], [Type], [IsExternal], [CreatedAt], [LastLoginAt], [IsDeleted], [ProfilePictureUrl], [LoginProvider])
+    VALUES (source.[Id], source.[Username], source.[Email], source.[PasswordHash], source.[FirstName], source.[LastName], source.[Status], source.[Type], source.[IsExternal], source.[CreatedAt], source.[LastLoginAt], source.[IsDeleted], source.[ProfilePictureUrl], source.[LoginProvider]);

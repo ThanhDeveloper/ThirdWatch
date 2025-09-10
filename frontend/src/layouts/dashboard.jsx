@@ -9,10 +9,14 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import useWelcomeToast from "@/lib/useWelcomeToast";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+
+  // Show welcome toast after successful login
+  useWelcomeToast();
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50 flex">
@@ -34,7 +38,7 @@ export function Dashboard() {
         >
           <Cog6ToothIcon className="h-5 w-5" />
         </IconButton>
-        
+
         {/* Main content area - grows to fill available space */}
         <main className="flex-1 p-4">
           <Routes>
@@ -53,7 +57,7 @@ export function Dashboard() {
             )}
           </Routes>
         </main>
-        
+
         {/* Footer - always at bottom */}
         <footer className="text-blue-gray-600 mt-auto">
           <Footer />

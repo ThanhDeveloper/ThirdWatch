@@ -1,4 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import {
   Navbar,
   Typography,
@@ -33,8 +34,25 @@ export function DashboardNavbar() {
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname.split('/').filter((el) => el !== '');
-  
-  const currentUser = userService.getCurrentUser();
+
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    userService
+      .getCurrentUser()
+      .then((u) => {
+        if (!isMounted) return;
+        setCurrentUser(u);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setCurrentUser(null);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleLogout = () => {
     authService.logout();
@@ -43,20 +61,18 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? 'white' : 'transparent'}
-      className={`rounded-xl transition-all ${
-        fixedNavbar
-          ? 'sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5'
-          : 'px-0 py-1'
-      }`}
+      className={`rounded-xl transition-all ${fixedNavbar
+        ? 'sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5'
+        : 'px-0 py-1'
+        }`}
       fullWidth
       blurred={fixedNavbar}
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
         <div className="capitalize">
           <Breadcrumbs
-            className={`bg-transparent p-0 transition-all ${
-              fixedNavbar ? 'mt-1' : ''
-            }`}
+            className={`bg-transparent p-0 transition-all ${fixedNavbar ? 'mt-1' : ''
+              }`}
           >
             <Link to={`/${layout}`}>
               <Typography
@@ -91,7 +107,7 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          
+
           {/* User Menu */}
           <Menu>
             <MenuHandler>
@@ -101,19 +117,21 @@ export function DashboardNavbar() {
                 className="hidden items-center gap-1 px-4 xl:flex normal-case"
               >
                 <Avatar
-                  src={currentUser?.avatar || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
+                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
                   alt={currentUser?.name || 'User'}
                   size="sm"
                   variant="circular"
                   className="mr-2"
                 />
-                {currentUser?.name || 'User'}
+                <span className="max-w-[140px] truncate" title={currentUser?.name || 'User'}>
+                  {currentUser?.name || 'User'}
+                </span>
               </Button>
             </MenuHandler>
             <MenuList className="w-max border-0">
               <MenuItem className="flex items-center gap-3">
                 <Avatar
-                  src={currentUser?.avatar || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
+                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
                   alt={currentUser?.name || 'User'}
                   size="sm"
                   variant="circular"
@@ -124,14 +142,18 @@ export function DashboardNavbar() {
                     color="blue-gray"
                     className="mb-1 font-normal"
                   >
-                    <strong>{currentUser?.name || 'User'}</strong>
+                    <strong className="block max-w-[220px] truncate" title={currentUser?.name || 'User'}>
+                      {currentUser?.name || 'User'}
+                    </strong>
                   </Typography>
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
+                    className="flex items-center gap-1 text-xs font-normal opacity-60 max-w-[240px] truncate"
                   >
-                    {currentUser?.email || 'user@example.com'}
+                    <span title={currentUser?.email || 'user@example.com'}>
+                      {currentUser?.email || 'user@example.com'}
+                    </span>
                   </Typography>
                 </div>
               </MenuItem>
@@ -152,7 +174,7 @@ export function DashboardNavbar() {
               </MenuItem>
             </MenuList>
           </Menu>
-          
+
           {/* Mobile User Icon */}
           <Menu>
             <MenuHandler>
@@ -175,7 +197,7 @@ export function DashboardNavbar() {
               </MenuItem>
             </MenuList>
           </Menu>
-          
+
           <Menu>
             <MenuHandler>
               <IconButton variant="text" color="blue-gray">

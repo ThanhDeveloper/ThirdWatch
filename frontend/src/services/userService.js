@@ -12,7 +12,20 @@ class UserService {
   async getCurrentUser() {
     try {
       const response = await apiClient.get('/user/me', { withCredentials: true });
-      return response.data;
+      const payload = response?.data?.data || {};
+      const normalized = {
+        name: payload.userName || '',
+        email: payload.email || '',
+        password: payload.password || '',
+        profilePictureUrl: (payload.profilePictureUrl && String(payload.profilePictureUrl).trim()) || '',
+      };
+
+      // Persist minimal info for greeting
+      try {
+        localStorage.setItem('user', JSON.stringify({ name: normalized.name }));
+      } catch (_) { }
+
+      return normalized;
     } catch (error) {
       throw error;
     }

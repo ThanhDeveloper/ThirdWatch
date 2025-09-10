@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ThirdWatch.Domain.Entities;
+using ThirdWatch.Domain.Enums;
 using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
@@ -36,6 +37,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.Type)
             .HasEnumToStringConversion()
             .IsRequired();
+
+        builder.Property(x => x.LoginProvider)
+            .HasEnumToStringConversion()
+            .HasDefaultValue(LoginProvider.Internal)
+            .IsRequired();
+
+        builder.Property(x => x.ProfilePictureUrl)
+            .HasMaxLength(255);
 
         builder.HasIndex(x => x.Username)
             .IsUnique();

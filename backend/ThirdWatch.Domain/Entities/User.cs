@@ -23,6 +23,10 @@ public class User : BaseEntity
 
     public bool IsExternal { get; set; }
 
+    public string? ProfilePictureUrl { get; set; }
+
+    public LoginProvider LoginProvider { get; set; }
+
     public string GetFullName()
     {
         return $"{FirstName} {LastName}".Trim();

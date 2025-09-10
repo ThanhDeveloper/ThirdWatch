@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -14,14 +14,27 @@ import {
   IconButton,
 } from '@material-tailwind/react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { 
-  ClipboardDocumentIcon, 
-  ArrowPathIcon, 
+import {
+  ClipboardDocumentIcon,
+  ArrowPathIcon,
   TrashIcon,
   PlusIcon,
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import fileTypes from '@/data/file-generator-config';
+import {
+  DocumentTextIcon,
+  CodeBracketSquareIcon,
+  TableCellsIcon,
+  Bars3BottomLeftIcon,
+  CodeBracketIcon,
+  AdjustmentsHorizontalIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/solid';
+import GuidGenerator from '@/widgets/tools/data-generator/GuidGenerator';
+import RandomStringGenerator from '@/widgets/tools/data-generator/RandomStringGenerator';
+import FileGenerator from '@/widgets/tools/data-generator/FileGenerator';
 
 export function DataGenerator() {
   // GUID Generator States
@@ -47,16 +60,33 @@ export function DataGenerator() {
   });
   const [generatedStrings, setGeneratedStrings] = useState([]);
 
+  // ----- File Generator State -----
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [fileContents, setFileContents] = useState({});
+  const [baseName, setBaseName] = useState('sample');
+
+  const iconMap = {
+    DocumentTextIcon,
+    CodeBracketSquareIcon,
+    TableCellsIcon,
+    Bars3BottomLeftIcon,
+    CodeBracketIcon,
+    AdjustmentsHorizontalIcon,
+    ShieldCheckIcon,
+  };
+
+  const selectedConfigs = useMemo(() => fileTypes.filter(f => selectedTypes.includes(f.id)), [selectedTypes]);
+
   // Generate GUID function
   const generateGuid = () => {
     const guids = [];
     for (let i = 0; i < guidOptions.count; i++) {
-      let guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      let guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
       });
-      
+
       // Apply options
       if (guidOptions.uppercase) {
         guid = guid.toUpperCase();
@@ -64,10 +94,10 @@ export function DataGenerator() {
       if (!guidOptions.includeHyphens) {
         guid = guid.replace(/-/g, '');
       }
-      
+
       guids.push(guid);
     }
-    
+
     if (guidOptions.count === 1) {
       setGuidValue(guids[0]);
     } else {
@@ -78,7 +108,7 @@ export function DataGenerator() {
   // Generate random string function
   const generateRandomString = () => {
     let chars = '';
-    
+
     // Build character set based on options
     if (stringOptions.customChars) {
       chars = stringOptions.customChars;
@@ -87,7 +117,7 @@ export function DataGenerator() {
       if (stringOptions.lowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
       if (stringOptions.includeNumbers) chars += '0123456789';
       if (stringOptions.includeSpecial) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-      
+
       // Fallback to default if no options selected
       if (!chars) chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     }
@@ -100,7 +130,7 @@ export function DataGenerator() {
       }
       strings.push(result);
     }
-    
+
     if (stringOptions.count === 1) {
       setRandomStringValue(strings[0]);
     } else {
@@ -134,6 +164,46 @@ export function DataGenerator() {
     }
   };
 
+  const handleToggleType = (id) => {
+    setSelectedTypes(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    const cfg = fileTypes.find(f => f.id === id);
+    if (cfg && !fileContents[id]) {
+      setFileContents(prev => ({ ...prev, [id]: cfg.defaultContent }));
+    }
+  };
+
+  const handleContentChange = (id, value) => {
+    setFileContents(prev => ({ ...prev, [id]: value }));
+  };
+
+  const downloadFile = (name, content, mime) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadSelected = () => {
+    if (selectedConfigs.length === 0) {
+      toast.info('Select at least one file type');
+      return;
+    }
+    selectedConfigs.forEach((cfg, index) => {
+      const content = fileContents[cfg.id] ?? cfg.defaultContent ?? '';
+      const fname = `${baseName || 'file'}-${index + 1}.${cfg.extension}`;
+      downloadFile(fname, content, cfg.mime);
+    });
+    toast.success(`Downloaded ${selectedConfigs.length} file(s)`);
+  };
+
+  const handleClearFiles = () => {
+    setSelectedTypes([]);
+    setFileContents({});
+  };
+
   return (
     <div className="mt-4 sm:mt-8 lg:mt-12">
       <div className="mb-6 sm:mb-8">
@@ -148,358 +218,42 @@ export function DataGenerator() {
       <Card className="border border-blue-gray-100 shadow-sm">
         <CardBody className="p-0">
           <Tabs.Root defaultValue="guid" className="w-full">
-            <Tabs.List className="flex w-full bg-blue-gray-50/50 p-1">
+            <Tabs.List className="flex w-full bg-blue-gray-50/50 p-1 gap-1">
               <Tabs.Trigger
                 value="guid"
-                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-white data-[state=active]:text-blue-gray-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200"
+                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200"
               >
                 <span className="hidden sm:inline">Generate GUID</span>
                 <span className="sm:hidden">GUID</span>
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="random-string"
-                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-white data-[state=active]:text-blue-gray-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200"
+                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-green-50 data-[state=active]:text-green-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200"
               >
                 <span className="hidden sm:inline">Generate Random String</span>
                 <span className="sm:hidden">String</span>
               </Tabs.Trigger>
+              <Tabs.Trigger
+                value="files"
+                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200"
+              >
+                <span className="hidden sm:inline">File Generator</span>
+                <span className="sm:hidden">Files</span>
+              </Tabs.Trigger>
             </Tabs.List>
 
             <Tabs.Content value="guid" className="p-4 sm:p-6">
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <Typography variant="h5" color="blue-gray" className="mb-2 sm:mb-4 text-lg sm:text-xl">
-                    GUID Generator
-                  </Typography>
-                  <Typography variant="paragraph" color="blue-gray" className="mb-4 sm:mb-6 text-sm sm:text-base">
-                    Generate globally unique identifiers (GUID/UUID) with customizable options.
-                  </Typography>
-                </div>
+              <GuidGenerator />
+            </Tabs.Content>
 
-                {/* GUID Options */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={guidOptions.uppercase}
-                      onChange={(e) => setGuidOptions(prev => ({ ...prev, uppercase: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Uppercase
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={guidOptions.includeHyphens}
-                      onChange={(e) => setGuidOptions(prev => ({ ...prev, includeHyphens: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Include Hyphens
-                    </Typography>
-                  </div>
-                  
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                      Count
-                    </Typography>
-                    <Input
-                      type="number"
-                      value={guidOptions.count}
-                      onChange={(e) => setGuidOptions(prev => ({ ...prev, count: Math.max(1, parseInt(e.target.value) || 1) }))}
-                      min="1"
-                      max="100"
-                      size="sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <Button
-                    onClick={generateGuid}
-                    className="flex items-center justify-center gap-2"
-                    color="blue"
-                    size="sm"
-                  >
-                    <ArrowPathIcon className="h-4 w-4" />
-                    Generate {guidOptions.count > 1 ? `${guidOptions.count} GUIDs` : 'GUID'}
-                  </Button>
-                  
-                  {(guidValue || generatedGuids.length > 0) && (
-                    <Button
-                      onClick={() => clearGenerated('guid')}
-                      variant="outlined"
-                      color="red"
-                      size="sm"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      Clear
-                    </Button>
-                  )}
-                </div>
-
-                {/* Single GUID Result */}
-                {guidValue && guidOptions.count === 1 && (
-                  <div className="space-y-2">
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Generated GUID:
-                    </Typography>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Input
-                        value={guidValue}
-                        readOnly
-                        className="font-mono text-xs sm:text-sm"
-                        containerProps={{ className: "min-w-0 flex-1" }}
-                      />
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        onClick={() => copyToClipboard(guidValue)}
-                        className="flex items-center justify-center gap-1"
-                      >
-                        <ClipboardDocumentIcon className="h-4 w-4" />
-                        Copy
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Multiple GUIDs Result */}
-                {generatedGuids.length > 0 && guidOptions.count > 1 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Typography variant="small" color="blue-gray" className="font-medium">
-                        Generated GUIDs ({generatedGuids.length}):
-                      </Typography>
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        onClick={() => copyAllToClipboard(generatedGuids)}
-                        className="flex items-center gap-1"
-                      >
-                        <DocumentDuplicateIcon className="h-4 w-4" />
-                        Copy All
-                      </Button>
-                    </div>
-                    <div className="max-h-60 overflow-y-auto space-y-2">
-                      {generatedGuids.map((guid, index) => (
-                        <div key={index} className="flex flex-col sm:flex-row gap-2 p-2 bg-gray-50 rounded-lg">
-                          <Input
-                            value={guid}
-                            readOnly
-                            className="font-mono text-xs sm:text-sm"
-                            containerProps={{ className: "min-w-0 flex-1" }}
-                          />
-                          <Button
-                            size="sm"
-                            variant="text"
-                            onClick={() => copyToClipboard(guid)}
-                            className="flex items-center justify-center gap-1"
-                          >
-                            <ClipboardDocumentIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+            {/* Files Generator */}
+            <Tabs.Content value="files" className="p-4 sm:p-6">
+              {/* Use extracted component for maintainability */}
+              <FileGenerator />
             </Tabs.Content>
 
             <Tabs.Content value="random-string" className="p-4 sm:p-6">
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <Typography variant="h5" color="blue-gray" className="mb-2 sm:mb-4 text-lg sm:text-xl">
-                    Random String Generator
-                  </Typography>
-                  <Typography variant="paragraph" color="blue-gray" className="mb-4 sm:mb-6 text-sm sm:text-base">
-                    Generate random strings with customizable length and character types.
-                  </Typography>
-                </div>
-
-                {/* String Options */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                      String Length
-                    </Typography>
-                    <Input
-                      type="number"
-                      value={stringLength}
-                      onChange={(e) => setStringLength(Math.max(1, parseInt(e.target.value) || 10))}
-                      min="1"
-                      max="1000"
-                      size="sm"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                      Count
-                    </Typography>
-                    <Input
-                      type="number"
-                      value={stringOptions.count}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, count: Math.max(1, parseInt(e.target.value) || 1) }))}
-                      min="1"
-                      max="100"
-                      size="sm"
-                    />
-                  </div>
-                  
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-                      Custom Characters
-                    </Typography>
-                    <Input
-                      value={stringOptions.customChars}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, customChars: e.target.value }))}
-                      placeholder="Optional custom set"
-                      size="sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Character Type Options */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={stringOptions.uppercase}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, uppercase: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Uppercase (A-Z)
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={stringOptions.lowercase}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, lowercase: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Lowercase (a-z)
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={stringOptions.includeNumbers}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, includeNumbers: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Numbers (0-9)
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      checked={stringOptions.includeSpecial}
-                      onChange={(e) => setStringOptions(prev => ({ ...prev, includeSpecial: e.target.checked }))}
-                      color="blue"
-                    />
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Special Chars
-                    </Typography>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <Button
-                    onClick={generateRandomString}
-                    className="flex items-center justify-center gap-2"
-                    color="blue"
-                    size="sm"
-                  >
-                    <ArrowPathIcon className="h-4 w-4" />
-                    Generate {stringOptions.count > 1 ? `${stringOptions.count} Strings` : 'String'}
-                  </Button>
-                  
-                  {(randomStringValue || generatedStrings.length > 0) && (
-                    <Button
-                      onClick={() => clearGenerated('string')}
-                      variant="outlined"
-                      color="red"
-                      size="sm"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      Clear
-                    </Button>
-                  )}
-                </div>
-
-                {/* Single String Result */}
-                {randomStringValue && stringOptions.count === 1 && (
-                  <div className="space-y-2">
-                    <Typography variant="small" color="blue-gray" className="font-medium">
-                      Generated String:
-                    </Typography>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Input
-                        value={randomStringValue}
-                        readOnly
-                        className="font-mono text-xs sm:text-sm"
-                        containerProps={{ className: "min-w-0 flex-1" }}
-                      />
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        onClick={() => copyToClipboard(randomStringValue)}
-                        className="flex items-center justify-center gap-1"
-                      >
-                        <ClipboardDocumentIcon className="h-4 w-4" />
-                        Copy
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Multiple Strings Result */}
-                {generatedStrings.length > 0 && stringOptions.count > 1 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Typography variant="small" color="blue-gray" className="font-medium">
-                        Generated Strings ({generatedStrings.length}):
-                      </Typography>
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        onClick={() => copyAllToClipboard(generatedStrings)}
-                        className="flex items-center gap-1"
-                      >
-                        <DocumentDuplicateIcon className="h-4 w-4" />
-                        Copy All
-                      </Button>
-                    </div>
-                    <div className="max-h-60 overflow-y-auto space-y-2">
-                      {generatedStrings.map((str, index) => (
-                        <div key={index} className="flex flex-col sm:flex-row gap-2 p-2 bg-gray-50 rounded-lg">
-                          <Input
-                            value={str}
-                            readOnly
-                            className="font-mono text-xs sm:text-sm"
-                            containerProps={{ className: "min-w-0 flex-1" }}
-                          />
-                          <Button
-                            size="sm"
-                            variant="text"
-                            onClick={() => copyToClipboard(str)}
-                            className="flex items-center justify-center gap-1"
-                          >
-                            <ClipboardDocumentIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <RandomStringGenerator />
             </Tabs.Content>
           </Tabs.Root>
         </CardBody>
