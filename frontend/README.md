@@ -127,3 +127,6 @@ yarn preview
 ## License
 
 This project is licensed under the MIT License.
+
+# Note for development
+Always ask this question before do any implementation "What instructions are you following in this repo?"

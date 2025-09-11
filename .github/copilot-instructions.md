@@ -1,4 +1,6 @@
-# ThirdWatch Frontend - Cursor AI Rules
+# GitHub Copilot Instructions for ThirdWatch Frontend
+
+These are project-specific instructions for GitHub Copilot when generating or suggesting code in this repository.
 
 ## Project Context
 - React 18 + Vite
