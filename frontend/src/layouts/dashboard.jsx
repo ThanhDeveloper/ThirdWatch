@@ -7,7 +7,7 @@ import {
   Configurator,
   Footer,
 } from "@/widgets/layout";
-import routes from "@/routes";
+import { routes, authRoutes } from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 import useWelcomeToast from "@/lib/useWelcomeToast";
 
@@ -42,6 +42,7 @@ export function Dashboard() {
         {/* Main content area - grows to fill available space */}
         <main className="flex-1 p-4">
           <Routes>
+            {/* Dashboard routes */}
             {routes.map(
               ({ layout, pages }) =>
                 layout === "dashboard" &&
@@ -54,6 +55,15 @@ export function Dashboard() {
                     return <Route key={path} path={path} element={element} />;
                   }
                 })
+            )}
+            
+            {/* Auth routes - accessible but not shown in sidebar */}
+            {authRoutes.map(
+              ({ layout, pages }) =>
+                layout === "auth" &&
+                pages.map(({ path, element }) => (
+                  <Route key={path} path={path} element={element} />
+                ))
             )}
           </Routes>
         </main>

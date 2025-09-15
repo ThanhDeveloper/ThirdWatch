@@ -11,7 +11,7 @@ import {
   Bars3CenterLeftIcon
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
-import { DataGenerator, JsonTools, Base64Tools } from "@/pages/dashboard/tools";
+import { DataGenerator, Base64Tools } from "@/pages/dashboard/tools";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -62,30 +62,22 @@ export const routes = [
             name: "base64 tools",
             path: "/tools/base64",
             element: <Base64Tools />,
-          },
-          {
-            icon: <CodeBracketIcon {...icon} />,
-            name: "json tools",
-            path: "/tools/json-tools",
-            element: <JsonTools />,
-          },
+          }
         ],
       },
     ],
   },
+];
+
+export const authRoutes = [
   {
-    title: "auth pages",
     layout: "auth",
     pages: [
       {
-        icon: <ServerStackIcon {...icon} />,
-        name: "sign in",
         path: "/sign-in",
         element: <SignIn />,
       },
       {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "sign up",
         path: "/sign-up",
         element: <SignUp />,
       },

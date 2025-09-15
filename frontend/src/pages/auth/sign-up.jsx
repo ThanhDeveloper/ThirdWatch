@@ -114,6 +114,7 @@ export function SignUp() {
               onSuccess={handleGoogleLoginSuccess}
               onError={() => setError("Failed to login with Google. The email might already be registered.")}
               disabled={loading}
+              className="w-full"
             />
           </div>
           <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">

@@ -25,19 +25,22 @@ export function GoogleLoginButton({ onSuccess, onError, buttonText = "Sign in Wi
   };
 
   return (
-    <div className={className} style={{ width: '100%' }}>
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        useOneTap={false}
-        theme="outline"
-        size="large"
-        width="100%"
-        text="signin_with"
-        shape="rectangular"
-        disabled={disabled}
-        logo_alignment="center"
-      />
+    <div className={`${className} w-full flex justify-center`}>
+      <div className="flex justify-center w-full">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap={false}
+          theme="outline"
+          size="large" 
+          width="100%"
+          text="signin_with"
+          shape="rectangular"
+          disabled={disabled}
+          logo_alignment="center"
+          style={{ width: '100%' }}
+        />
+      </div>
     </div>
   );
 }
