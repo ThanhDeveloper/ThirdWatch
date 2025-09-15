@@ -1,7 +1,7 @@
 namespace ThirdWatch.Shared.Options;
 public class JwtOptions
 {
-    public const string Section = "Jwt";
+    public const string SectionName = "Jwt";
 
     public required string Secret { get; init; }
 

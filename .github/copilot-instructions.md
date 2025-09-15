@@ -135,3 +135,5 @@ const handleSubmit = async () => {
 - File should not contain any unused imports or variables
 - Code in files should not exceed 800 lines. If it is too long, separate components for easy reuse and import
 - UI should be consistent with existing design patterns and components
+- Never add redundant comments
+- Don't add redundant code and console logs

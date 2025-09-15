@@ -36,6 +36,19 @@ public class AuthController(IMediator mediator) : ControllerBase
         return Ok(ApiResponse.SuccessResult("Login successfully"));
     }
 
+    [HttpPost("google-login")]
+    [ProducesResponseType(typeof(ApiResponse<string>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+    {
+        var command = new GoogleLoginCommand(request.IdToken);
+        var result = await mediator.Send(command);
+
+        Response.Cookies.Append("AccessToken", result.AccessToken, BuildAuthCookieOptions(result.ExpiresAt));
+
+        return Ok(ApiResponse.SuccessResult("Google login successfully"));
+    }
+
     [Authorize]
     [HttpPost("logout")]
     [ProducesResponseType(typeof(ApiResponse<string>), (int)HttpStatusCode.OK)]

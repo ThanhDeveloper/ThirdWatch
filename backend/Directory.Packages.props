@@ -13,6 +13,8 @@
     <MicrosoftExtensionsVersion>9.0.7</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Google -->
+    <PackageVersion Include="Google.Apis.Auth" Version="1.71.0" />
     <!-- Microsoft -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="$(MicrosoftExtensionsVersion)" />

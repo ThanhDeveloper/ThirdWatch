@@ -7,7 +7,7 @@ public class GetCurrentUserQueryHandler(IUserService userService) : IRequestHand
 {
     public async Task<UserResponseDto> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
     {
-        var user = await userService.GetUserByIdAsync(request.UserId)
+        var user = await userService.GetUserById(request.UserId)
             ?? throw new NotFoundException($"User not found");
 
         return new UserResponseDto(user.Username, user.Email, user.ProfilePictureUrl);

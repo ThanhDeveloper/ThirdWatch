@@ -28,6 +28,7 @@ import {
 } from '@/context';
 import authService from '@/services/authService';
 import userService from '@/services/userService';
+import fallbackProfilePic from '@/assets/images/avatar.jpg';
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -117,7 +118,7 @@ export function DashboardNavbar() {
                 className="hidden items-center gap-1 px-4 xl:flex normal-case"
               >
                 <Avatar
-                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
+                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || fallbackProfilePic}
                   alt={currentUser?.name || 'User'}
                   size="sm"
                   variant="circular"
@@ -131,7 +132,7 @@ export function DashboardNavbar() {
             <MenuList className="w-max border-0">
               <MenuItem className="flex items-center gap-3">
                 <Avatar
-                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || 'https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg'}
+                  src={(currentUser?.profilePictureUrl && currentUser.profilePictureUrl.trim()) || fallbackProfilePic}
                   alt={currentUser?.name || 'User'}
                   size="sm"
                   variant="circular"

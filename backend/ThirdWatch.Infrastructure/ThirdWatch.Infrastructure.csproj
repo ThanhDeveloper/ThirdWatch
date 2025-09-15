@@ -25,7 +25,6 @@
     <Folder Include="Persistence\Repositories\" />
     <Folder Include="Persistence\Extensions\" />
     <Folder Include="Identity\" />
-    <Folder Include="Services\" />
     <Folder Include="External\Services\" />
     <Folder Include="External\Clients\" />
     <Folder Include="Logging\" />

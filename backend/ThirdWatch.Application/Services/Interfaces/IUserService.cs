@@ -1,11 +1,14 @@
 using ThirdWatch.Domain.Entities;
+using ThirdWatch.Shared.Models;
 
 namespace ThirdWatch.Application.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<User?> ValidateUserAsync(string email, string password);
-    Task<User?> GetUserByIdAsync(Guid id);
-    Task<User?> GetUserByUsernameAsync(string username);
-    Task<User> UpdateUserAsync(User user);
+    Task<User?> ValidateUser(string email, string password);
+    Task<User?> GetUserById(Guid id);
+    Task<User?> GetUserByUsername(string username);
+    Task<User> UpdateUser(User user);
+    Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken);
+    Task<User> FindOrCreateGoogleUser(GoogleUserInfo googleUser, CancellationToken cancellationToken);
 }

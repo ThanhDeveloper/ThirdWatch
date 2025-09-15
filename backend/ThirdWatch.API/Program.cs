@@ -2,7 +2,7 @@ using ThirdWatch.API.Extensions;
 using ThirdWatch.API.Filters;
 using ThirdWatch.API.Middleware;
 using ThirdWatch.Infrastructure.Services;
-using ThirdWatch.Shared.Options;
+using ThirdWatch.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +11,11 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 builder.Services.AddSwaggerServices();
 
+builder.AddKeyVault(string.Empty);
+
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 
 builder.Services.AddCors(options =>
 {

@@ -9,7 +9,7 @@ public class LoginCommandHandler(IUserService userService, IJwtService jwtServic
 {
     public async Task<LoginResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await userService.ValidateUserAsync(request.Email, request.Password)
+        var user = await userService.ValidateUser(request.Email, request.Password)
             ?? throw new NotFoundException("Invalid username or password");
 
         if (!user.IsActive())
@@ -23,7 +23,7 @@ public class LoginCommandHandler(IUserService userService, IJwtService jwtServic
 
         var expiresAt = DateTime.UtcNow.AddHours(jwtOptions.Value.ExpiryInHours);
 
-        await userService.UpdateUserAsync(user);
+        await userService.UpdateUser(user);
 
         return new LoginResponseDto(accessToken, expiresAt);
     }
