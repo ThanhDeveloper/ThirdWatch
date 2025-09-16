@@ -10,7 +10,7 @@ import {
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-export function Navbar({ brandName = "Material Tailwind React",
+export function Navbar({ brandName = "ThirdWatch",
   action = (
     <a
       href="https://www.creative-tim.com/product/material-tailwind-dashboard-react"

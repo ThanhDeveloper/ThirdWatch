@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Typography, Button, Input, Switch } from '@material-tailwind/react';
-import { ClipboardDocumentIcon, ArrowPathIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { CopyButton } from '@/components/common';
 
 export default function GuidGenerator() {
     const [guidValue, setGuidValue] = useState('');
@@ -72,9 +73,7 @@ export default function GuidGenerator() {
                     <Typography variant="small" color="blue-gray" className="font-medium">Generated GUID:</Typography>
                     <div className="flex flex-col sm:flex-row gap-2">
                         <Input value={guidValue} readOnly className="font-mono text-xs sm:text-sm" containerProps={{ className: 'min-w-0 flex-1' }} />
-                        <Button size="md" variant="outlined" onClick={() => copyToClipboard(guidValue)} className="flex items-center justify-center gap-1">
-                            <ClipboardDocumentIcon className="h-4 w-4" /> Copy
-                        </Button>
+                        <CopyButton content={guidValue} />
                     </div>
                 </div>
             )}
@@ -83,17 +82,13 @@ export default function GuidGenerator() {
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
                         <Typography variant="small" color="blue-gray" className="font-medium">Generated GUIDs ({generatedGuids.length}):</Typography>
-                        <Button size="md" variant="outlined" onClick={() => copyAllToClipboard(generatedGuids)} className="flex items-center gap-1">
-                            <DocumentDuplicateIcon className="h-4 w-4" /> Copy All
-                        </Button>
+                        <CopyButton content={generatedGuids} isMultiple />
                     </div>
                     <div className="max-h-60 overflow-y-auto space-y-2">
                         {generatedGuids.map((guid, index) => (
                             <div key={index} className="flex flex-col sm:flex-row gap-2 p-2 bg-gray-50 rounded-lg">
                                 <Input value={guid} readOnly className="font-mono text-xs sm:text-sm" containerProps={{ className: 'min-w-0 flex-1' }} />
-                                <Button size="md" variant="text" onClick={() => copyToClipboard(guid)} className="flex items-center justify-center gap-1">
-                                    <ClipboardDocumentIcon className="h-4 w-4" />
-                                </Button>
+                                <CopyButton content={guid} variant="text" isIcon />
                             </div>
                         ))}
                     </div>

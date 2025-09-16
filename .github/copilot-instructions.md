@@ -4,7 +4,7 @@ These are project-specific instructions for GitHub Copilot when generating or su
 
 ## Project Context
 - React 18 + Vite
-- Material Tailwind React components
+- ThirdWatch components
 - React Router DOM v6
 - Axios for API calls
 - ApexCharts for data visualization
@@ -22,7 +22,7 @@ These are project-specific instructions for GitHub Copilot when generating or su
 
 ### 2. Responsive Design Requirements
 - ALL code MUST be mobile-first and fully responsive
-- Use Tailwind CSS responsive prefixes: `sm:`, `md:`, `lg:`, `xl:`
+- Use Tailwind CSS responsive prefixes: `md:`, `lg:`, `xl:`
 - Test layouts on mobile (320px), tablet (768px), and desktop (1024px+)
 - NEVER break the layout on any device - app must work perfectly on all screen sizes
 - Use flexbox and grid layouts appropriately for responsive behavior
@@ -60,7 +60,7 @@ These are project-specific instructions for GitHub Copilot when generating or su
 - Use proper loading states for async operations
 
 ### 7. Styling Guidelines
-- Use Material Tailwind React components as the primary UI library
+- Use ThirdWatch components as the primary UI library
 - Follow the established color scheme and design system
 - Use consistent spacing and typography
 - Implement proper dark/light theme support
@@ -137,3 +137,4 @@ const handleSubmit = async () => {
 - UI should be consistent with existing design patterns and components
 - Never add redundant comments
 - Don't add redundant code and console logs
+- Reuse existing components and utilities wherever possible (e.g., buttons, modals, form elements)

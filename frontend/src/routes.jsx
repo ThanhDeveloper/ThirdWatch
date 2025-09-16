@@ -10,8 +10,8 @@ import {
   SparklesIcon,
   Bars3CenterLeftIcon
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
-import { DataGenerator, Base64Tools } from "@/pages/dashboard/tools";
+import { Home, Profile, Tables } from "@/pages/dashboard";
+import { DataGenerator, Base64Tools, JsonUtilities } from "@/pages/dashboard/tools";
 import { SignIn, SignUp } from "@/pages/auth";
 
 const icon = {
@@ -41,12 +41,6 @@ export const routes = [
         element: <Tables />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
-        element: <Notifications />,
-      },
-      {
         icon: <WrenchScrewdriverIcon {...icon} />,
         name: "tools",
         path: "/tools",
@@ -62,6 +56,12 @@ export const routes = [
             name: "base64 tools",
             path: "/tools/base64",
             element: <Base64Tools />,
+          },
+          {
+            icon: <CodeBracketIcon {...icon} />,
+            name: "json utilities",
+            path: "/tools/json-utilities",
+            element: <JsonUtilities />,
           }
         ],
       },

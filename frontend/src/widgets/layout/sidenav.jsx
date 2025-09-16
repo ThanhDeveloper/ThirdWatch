@@ -11,7 +11,7 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useState } from "react";
 
 export function Sidenav({
-  brandName = "Material Tailwind React",
+  brandName = "ThirdWatch Panel",
   brandImg = "/img/logo-ct.png",
   routes = [],
 }) {

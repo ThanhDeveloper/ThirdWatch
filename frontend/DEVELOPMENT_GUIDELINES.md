@@ -7,7 +7,7 @@ ThirdWatch is a React-based dashboard application with authentication, data visu
 
 ### Tech Stack
 - **Frontend**: React 18 + Vite
-- **UI Library**: Material Tailwind React
+- **UI Library**: ThirdWatch
 - **Routing**: React Router DOM v6
 - **HTTP Client**: Axios
 - **Charts**: ApexCharts
@@ -79,7 +79,7 @@ const response = await apiClient.get('/endpoint');
 ## 🎨 UI/UX Guidelines
 
 ### Material Tailwind Components
-- Use Material Tailwind React components consistently
+- Use ThirdWatch components consistently
 - Follow established color scheme and design system
 - Implement proper loading states and user feedback
 
@@ -236,7 +236,7 @@ npm run build
 ## 📚 Resources
 
 ### Documentation
-- [Material Tailwind React](https://www.material-tailwind.com/)
+- [ThirdWatch](https://www.material-tailwind.com/)
 - [React Router DOM](https://reactrouter.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [ApexCharts](https://apexcharts.com/)

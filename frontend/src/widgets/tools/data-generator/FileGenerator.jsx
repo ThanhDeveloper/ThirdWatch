@@ -12,6 +12,7 @@ import {
     ShieldCheckIcon,
 } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
+import { DownloadButton } from '@/components/common';
 
 export default function FileGenerator() {
     const [selectedTypes, setSelectedTypes] = useState([]);

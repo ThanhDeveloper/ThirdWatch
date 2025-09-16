@@ -9,8 +9,9 @@ import {
     Chip,
 } from '@material-tailwind/react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { CopyButton, DownloadButton } from '@/components/common';
 
 export function Base64Tools() {
     const [input, setInput] = useState('');
@@ -20,25 +21,7 @@ export function Base64Tools() {
 
     const canCopy = useMemo(() => Boolean(output), [output]);
 
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(output);
-            toast.success('Copied to clipboard');
-        } catch (_) {
-            toast.error('Copy failed');
-        }
-    };
-
-    const handleDownload = () => {
-        if (!output) return;
-        const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName ? `${fileName}.txt` : 'result.txt';
-        a.click();
-        URL.revokeObjectURL(url);
-    };
+    // We've replaced the handleCopy and handleDownload functions with our reusable components
 
     const onEncode = () => {
         try {
@@ -94,8 +77,22 @@ export function Base64Tools() {
                 <CardBody className="p-0">
                     <Tabs.Root defaultValue="decode" className="w-full">
                         <Tabs.List className="flex w-full bg-blue-gray-50/50 p-1">
-                            <Tabs.Trigger value="decode" className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-white data-[state=active]:text-blue-gray-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200">Decode</Tabs.Trigger>
-                            <Tabs.Trigger value="encode" className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600 data-[state=active]:bg-white data-[state=active]:text-blue-gray-900 data-[state=active]:shadow-sm rounded-md transition-all duration-200">Encode</Tabs.Trigger>
+                            <Tabs.Trigger
+                                value="decode"
+                                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600
+                                    data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700
+                                    data-[state=active]:shadow-sm rounded-md transition-all duration-200"
+                            >
+                                Decode
+                            </Tabs.Trigger>
+                            <Tabs.Trigger
+                                value="encode"
+                                className="flex-1 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-gray-600
+                                    data-[state=active]:bg-green-50 data-[state=active]:text-blue-gray-900
+                                    data-[state=active]:shadow-sm rounded-md transition-all duration-200"
+                            >
+                                Encode
+                            </Tabs.Trigger>
                         </Tabs.List>
 
                         {/* Shared Panel Layout */}
@@ -106,26 +103,24 @@ export function Base64Tools() {
                                 setInput={setInput}
                                 output={output}
                                 onAction={onDecode}
-                                onCopy={handleCopy}
-                                onDownload={handleDownload}
                                 onFilePick={onFilePick}
                                 fileInputRef={fileInputRef}
+                                fileName={fileName}
                                 onReset={reset}
                                 canCopy={canCopy}
                             />
                         </Tabs.Content>
 
-                        <Tabs.Content value="encode" className="p-4 sm:p-6">
+                        <Tabs.Content value="encode" className="p-4 sm:p-6" color='green'>
                             <Panel
                                 mode="encode"
                                 input={input}
                                 setInput={setInput}
                                 output={output}
                                 onAction={onEncode}
-                                onCopy={handleCopy}
-                                onDownload={handleDownload}
                                 onFilePick={onFilePick}
                                 fileInputRef={fileInputRef}
+                                fileName={fileName}
                                 onReset={reset}
                                 canCopy={canCopy}
                             />
@@ -137,59 +132,70 @@ export function Base64Tools() {
     );
 }
 
-function Panel({ mode, input, setInput, output, onAction, onCopy, onDownload, onFilePick, fileInputRef, onReset, canCopy }) {
+function Panel({ mode, input, setInput, output, onAction, onFilePick, fileInputRef, fileName, onReset, canCopy }) {
     const title = mode === 'decode' ? 'Decode from Base64' : 'Encode to Base64';
     const cta = mode === 'decode' ? 'Decode' : 'Encode';
 
     return (
-        <div className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <Typography variant="small" color="blue-gray" className="font-medium">{title}</Typography>
-                        <div className="flex gap-2 invisible">
-                            <Button size="sm" variant="outlined" className="flex items-center gap-2">
-                                <ClipboardDocumentIcon className="h-4 w-4" /> Copy
-                            </Button>
-                            <Button size="sm" variant="outlined" className="flex items-center gap-2">
-                                <ArrowDownTrayIcon className="h-4 w-4" /> Download
-                            </Button>
-                        </div>
-                    </div>
-                    <Textarea
-                        rows={10}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={mode === 'decode' ? 'Paste Base64 here…' : 'Paste or type text to encode…'}
-                        className="font-mono text-xs sm:text-sm"
-                    />
-                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                        <input ref={fileInputRef} type="file" accept=".txt,.json,.csv,.log,.md,.xml,.html" onChange={onFilePick} className="block w-full text-sm" />
-                        <div className="flex gap-2">
-                            <Button size="sm" color="blue" onClick={onAction} className="flex items-center gap-2">
-                                <ArrowPathIcon className="h-4 w-4" /> {cta}
-                            </Button>
-                            <Button size="sm" variant="outlined" color="red" onClick={onReset}>Clear</Button>
-                        </div>
+        <div className="space-y-6">
+            {/* Input Section */}
+            <div>
+                <div className="flex items-center justify-between mb-2">
+                    <Typography variant="small" color="blue-gray" className="font-medium">{title}</Typography>
+                </div>
+                <Textarea
+                    rows={6}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={mode === 'decode' ? 'Paste Base64 here…' : 'Paste or type text to encode…'}
+                    className="font-mono text-xs sm:text-sm w-full"
+                />
+            </div>
+            
+            {/* Action Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <label className="inline-flex items-center gap-2 text-sm text-blue-gray-600 cursor-pointer">
+                        <input ref={fileInputRef} type="file" accept=".txt,.json,.csv,.log,.md,.xml,.html" onChange={onFilePick} className="hidden" />
+                        <span className="inline-flex items-center gap-2 px-3 py-1.5 border rounded-md bg-blue-50 text-blue-700">
+                            Choose File
+                        </span>
+                        <span className="text-sm text-blue-gray-500 truncate max-w-[220px]">{fileName || 'No file chosen'}</span>
+                    </label>
+                </div>
+                <div className="ml-auto flex gap-2">
+                    <Button size="md" color="blue" onClick={onAction} className="flex items-center gap-2 shadow-md">
+                        <ArrowPathIcon className="h-4 w-4" /> {cta}
+                    </Button>
+                    <Button size="md" variant="outlined" color="red" onClick={onReset}>
+                        Clear
+                    </Button>
+                </div>
+            </div>
+
+            {/* Output Section */}
+            <div>
+                <div className="flex items-center justify-between mb-2">
+                    <Typography variant="small" color="blue-gray" className="font-medium">Result</Typography>
+                    <div className="flex gap-2">
+                        <CopyButton content={output} disabled={!canCopy} size="md" variant="outlined" className="px-3 py-1" />
+                        <DownloadButton 
+                            content={output} 
+                            fileName={`base64-${mode === 'decode' ? 'decoded' : 'encoded'}.txt`} 
+                            disabled={!canCopy} 
+                            size="md"
+                            variant="outlined"
+                            className="px-3 py-1"
+                        />
                     </div>
                 </div>
-
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <Typography variant="small" color="blue-gray" className="font-medium">Result</Typography>
-                        <div className="flex gap-2">
-                            <Button size="sm" variant="outlined" disabled={!canCopy} onClick={onCopy} className="flex items-center gap-2">
-                                <ClipboardDocumentIcon className="h-4 w-4" /> Copy
-                            </Button>
-                            <Button size="sm" variant="outlined" disabled={!canCopy} onClick={onDownload} className="flex items-center gap-2">
-                                <ArrowDownTrayIcon className="h-4 w-4" /> Download
-                            </Button>
-                        </div>
-                    </div>
-                    <Textarea rows={10} value={output} readOnly className="font-mono text-xs sm:text-sm" />
-                    {!output && (
-                        <Chip value="No result yet" variant="ghost" color="blue-gray" className="w-max" />
-                    )}
+                <div>
+                    <Textarea 
+                        rows={6} 
+                        value={output} 
+                        readOnly 
+                        className="font-mono text-xs sm:text-sm w-full" 
+                    />
                 </div>
             </div>
         </div>

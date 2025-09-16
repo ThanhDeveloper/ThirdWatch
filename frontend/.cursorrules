@@ -2,7 +2,7 @@
 
 ## Project Context
 - React 18 + Vite
-- Material Tailwind React components
+- ThirdWatch components
 - React Router DOM v6
 - Axios for API calls
 - ApexCharts for data visualization
@@ -58,7 +58,7 @@
 - Use proper loading states for async operations
 
 ### 7. Styling Guidelines
-- Use Material Tailwind React components as the primary UI library
+- Use ThirdWatch components as the primary UI library
 - Follow the established color scheme and design system
 - Use consistent spacing and typography
 - Implement proper dark/light theme support

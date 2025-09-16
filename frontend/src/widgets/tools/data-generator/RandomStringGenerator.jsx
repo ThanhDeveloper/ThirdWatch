@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Typography, Button, Input, Switch } from '@material-tailwind/react';
-import { ClipboardDocumentIcon, ArrowPathIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { CopyButton } from '@/components/common';
 
 export default function RandomStringGenerator() {
     const [randomStringValue, setRandomStringValue] = useState('');
@@ -60,15 +61,15 @@ export default function RandomStringGenerator() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <Typography variant="small" color="blue-gray" className="mb-2 font-medium">String Length</Typography>
-                    <Input type="number" value={stringLength} onChange={(e) => setStringLength(Math.max(1, parseInt(e.target.value) || 10))} min="1" max="1000" size="sm" />
+                    <Input type="number" value={stringLength} onChange={(e) => setStringLength(Math.max(1, parseInt(e.target.value) || 10))} min="1" max="1000" size="md" />
                 </div>
                 <div>
                     <Typography variant="small" color="blue-gray" className="mb-2 font-medium">Count</Typography>
-                    <Input type="number" value={stringOptions.count} onChange={(e) => setStringOptions((p) => ({ ...p, count: Math.max(1, parseInt(e.target.value) || 1) }))} min="1" max="100" size="sm" />
+                    <Input type="number" value={stringOptions.count} onChange={(e) => setStringOptions((p) => ({ ...p, count: Math.max(1, parseInt(e.target.value) || 1) }))} min="1" max="100" size="md" />
                 </div>
                 <div className="sm:col-span-2 lg:col-span-1">
                     <Typography variant="small" color="blue-gray" className="mb-2 font-medium">Custom Characters</Typography>
-                    <Input value={stringOptions.customChars} onChange={(e) => setStringOptions((p) => ({ ...p, customChars: e.target.value }))} placeholder="Optional custom set" size="sm" />
+                    <Input value={stringOptions.customChars} onChange={(e) => setStringOptions((p) => ({ ...p, customChars: e.target.value }))} placeholder="Optional custom set" size="md" />
                 </div>
             </div>
 
@@ -92,11 +93,11 @@ export default function RandomStringGenerator() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                <Button onClick={generateRandomString} className="flex items-center justify-center gap-2" color="blue" size="sm">
+                <Button onClick={generateRandomString} className="flex items-center justify-center gap-2" color="blue" size="md">
                     <ArrowPathIcon className="h-4 w-4" /> Generate {stringOptions.count > 1 ? `${stringOptions.count} Strings` : 'String'}
                 </Button>
                 {(randomStringValue || generatedStrings.length > 0) && (
-                    <Button onClick={clearGenerated} variant="outlined" color="red" size="sm" className="flex items-center justify-center gap-2">
+                    <Button onClick={clearGenerated} variant="outlined" color="red" size="md" className="flex items-center justify-center gap-2">
                         <TrashIcon className="h-4 w-4" /> Clear
                     </Button>
                 )}
@@ -107,9 +108,7 @@ export default function RandomStringGenerator() {
                     <Typography variant="small" color="blue-gray" className="font-medium">Generated String:</Typography>
                     <div className="flex flex-col sm:flex-row gap-2">
                         <Input value={randomStringValue} readOnly className="font-mono text-xs sm:text-sm" containerProps={{ className: 'min-w-0 flex-1' }} />
-                        <Button size="sm" variant="outlined" onClick={() => copyToClipboard(randomStringValue)} className="flex items-center justify-center gap-1">
-                            <ClipboardDocumentIcon className="h-4 w-4" /> Copy
-                        </Button>
+                        <CopyButton content={randomStringValue} />
                     </div>
                 </div>
             )}
@@ -118,17 +117,13 @@ export default function RandomStringGenerator() {
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
                         <Typography variant="small" color="blue-gray" className="font-medium">Generated Strings ({generatedStrings.length}):</Typography>
-                        <Button size="sm" variant="outlined" onClick={() => copyAllToClipboard(generatedStrings)} className="flex items-center gap-1">
-                            <DocumentDuplicateIcon className="h-4 w-4" /> Copy All
-                        </Button>
+                        <CopyButton content={generatedStrings} isMultiple />
                     </div>
                     <div className="max-h-60 overflow-y-auto space-y-2">
                         {generatedStrings.map((str, index) => (
                             <div key={index} className="flex flex-col sm:flex-row gap-2 p-2 bg-gray-50 rounded-lg">
                                 <Input value={str} readOnly className="font-mono text-xs sm:text-sm" containerProps={{ className: 'min-w-0 flex-1' }} />
-                                <Button size="sm" variant="text" onClick={() => copyToClipboard(str)} className="flex items-center justify-center gap-1">
-                                    <ClipboardDocumentIcon className="h-4 w-4" />
-                                </Button>
+                                <CopyButton content={str} variant="text" isIcon />
                             </div>
                         ))}
                     </div>
