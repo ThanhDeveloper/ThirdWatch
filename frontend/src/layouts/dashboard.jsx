@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -10,6 +10,7 @@ import {
 import { routes, authRoutes } from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 import useWelcomeToast from "@/lib/useWelcomeToast";
+import NotFound from "@/pages/not-found";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -42,19 +43,32 @@ export function Dashboard() {
         {/* Main content area - grows to fill available space */}
         <main className="flex-1 p-4">
           <Routes>
+            {/* Default route for /dashboard -> redirect to /dashboard/home */}
+            <Route index element={<Navigate to="/dashboard/home" replace />} />
+            
             {/* Dashboard routes */}
             {routes.map(
               ({ layout, pages }) =>
                 layout === "dashboard" &&
                 pages.map(({ path, element, children }) => {
+                  const routes = [];
+                  
+                  // Add the main route
+                  routes.push(
+                    <Route key={path} path={path} element={element} />
+                  );
+                  
+                  // Add children routes if they exist
                   if (children && children.length > 0) {
-                    return children.map(({ path: childPath, element: childElement }) => (
-                      <Route key={childPath} path={childPath} element={childElement} />
-                    ));
-                  } else {
-                    return <Route key={path} path={path} element={element} />;
+                    children.forEach(({ path: childPath, element: childElement }) => {
+                      routes.push(
+                        <Route key={childPath} path={childPath} element={childElement} />
+                      );
+                    });
                   }
-                })
+                  
+                  return routes;
+                }).flat()
             )}
             
             {/* Auth routes - accessible but not shown in sidebar */}
@@ -65,6 +79,9 @@ export function Dashboard() {
                   <Route key={path} path={path} element={element} />
                 ))
             )}
+            
+            {/* 404 route for unmatched dashboard paths */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
 

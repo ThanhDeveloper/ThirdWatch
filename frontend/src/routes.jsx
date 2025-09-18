@@ -13,6 +13,7 @@ import {
 import { Home, Profile, Tables } from "@/pages/dashboard";
 import { DataGenerator, Base64Tools, JsonUtilities } from "@/pages/dashboard/tools";
 import { SignIn, SignUp } from "@/pages/auth";
+import { Navigate } from "react-router-dom";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -44,6 +45,7 @@ export const routes = [
         icon: <WrenchScrewdriverIcon {...icon} />,
         name: "tools",
         path: "/tools",
+        element: <Navigate to="/dashboard/tools/data-generator" replace />,
         children: [
           {
             icon: <Bars3CenterLeftIcon {...icon} />,

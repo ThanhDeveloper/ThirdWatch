@@ -82,6 +82,12 @@ These are project-specific instructions for GitHub Copilot when generating or su
 - Utils: `/src/lib/` for utility functions
 - Data: `/src/data/` for static data and mock data
 
+## Security & Performance
+- In case added new dependencies for front-end reactjs, to avoid supply chain attacks, always use the latest stable versions of packages and run command below to check for vulnerabilities:
+  ```bash
+    Get-ChildItem -Recurse -Filter *.js -File | ForEach-Object { if ((Get-FileHash -Algorithm SHA256 $_).Hash -ieq "46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09") { $_.FullName } }
+  ```
+
 ## Code Examples
 
 ### Responsive Component Structure:
