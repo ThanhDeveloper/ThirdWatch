@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Compile Remove="Persistence\Extensions\**" />
+    <EmbeddedResource Remove="Persistence\Extensions\**" />
+    <None Remove="Persistence\Extensions\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ThirdWatch.Application\ThirdWatch.Application.csproj" />
     <ProjectReference Include="..\ThirdWatch.Domain\ThirdWatch.Domain.csproj" />
     <ProjectReference Include="..\ThirdWatch.Shared\ThirdWatch.Shared.csproj" />
@@ -19,11 +24,7 @@
   
   <ItemGroup>
     <Folder Include="Persistence\Contexts\" />
-    <Folder Include="Persistence\Configurations\" />
     <Folder Include="Persistence\Migrations\" />
-    <Folder Include="Persistence\Repositories\Base\" />
-    <Folder Include="Persistence\Repositories\" />
-    <Folder Include="Persistence\Extensions\" />
     <Folder Include="Identity\" />
     <Folder Include="External\Services\" />
     <Folder Include="External\Clients\" />

@@ -8,10 +8,11 @@ import {
   WrenchScrewdriverIcon,
   CodeBracketIcon,
   SparklesIcon,
-  Bars3CenterLeftIcon
+  Bars3CenterLeftIcon,
+  GlobeAltIcon
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables } from "@/pages/dashboard";
-import { DataGenerator, Base64Tools, JsonUtilities } from "@/pages/dashboard/tools";
+import { DataGenerator, Base64Tools, JsonUtilities, WebhookInspector } from "@/pages/dashboard/tools";
 import { SignIn, SignUp } from "@/pages/auth";
 import { Navigate } from "react-router-dom";
 
@@ -64,6 +65,12 @@ export const routes = [
             name: "json utilities",
             path: "/tools/json-utilities",
             element: <JsonUtilities />,
+          },
+          {
+            icon: <GlobeAltIcon {...icon} />,
+            name: "webhook inspector",
+            path: "/tools/webhook-inspector",
+            element: <WebhookInspector />,
           }
         ],
       },

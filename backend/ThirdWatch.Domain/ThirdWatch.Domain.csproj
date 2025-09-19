@@ -7,6 +7,5 @@
     <Folder Include="Entities\Base\" />
     <Folder Include="ValueObjects\" />
     <Folder Include="Events\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 </Project>

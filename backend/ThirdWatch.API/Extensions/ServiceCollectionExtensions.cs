@@ -75,6 +75,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IHookLogService, HookLogService>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<JwtHelper>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();

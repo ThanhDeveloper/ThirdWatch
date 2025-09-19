@@ -9,6 +9,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<User> Users => Set<User>();
 
+    public DbSet<HookLog> HookLogs => Set<HookLog>();
+
+    public DbSet<HookLogDetail> HookLogDetails => Set<HookLogDetail>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
