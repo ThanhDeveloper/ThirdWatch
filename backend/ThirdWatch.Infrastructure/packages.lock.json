@@ -243,11 +243,6 @@
           "System.Text.Json": "7.0.3"
         }
       },
-      "Microsoft.CSharp": {
-        "type": "Transitive",
-        "resolved": "4.7.0",
-        "contentHash": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA=="
-      },
       "Microsoft.Data.SqlClient": {
         "type": "Transitive",
         "resolved": "5.1.6",
@@ -688,8 +683,6 @@
       "thirdwatch.application": {
         "type": "Project",
         "dependencies": {
-          "AutoMapper": "[12.0.1, )",
-          "FluentValidation": "[11.8.1, )",
           "MediatR": "[12.5.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[9.0.7, )",
           "Microsoft.Extensions.Logging.Abstractions": "[9.0.7, )",
@@ -715,15 +708,6 @@
           "Microsoft.IdentityModel.Tokens": "[8.13.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.13.0, )",
           "ThirdWatch.Domain": "[1.0.0, )"
-        }
-      },
-      "AutoMapper": {
-        "type": "CentralTransitive",
-        "requested": "[12.0.1, )",
-        "resolved": "12.0.1",
-        "contentHash": "hvV62vl6Hp/WfQ24yzo3Co9+OPl8wH8hApwVtgWpiAynVJkUcs7xvehnSftawL8Pe8FrPffBRM3hwzLQqWDNjA==",
-        "dependencies": {
-          "Microsoft.CSharp": "4.7.0"
         }
       },
       "Azure.Extensions.AspNetCore.Configuration.Secrets": {
@@ -763,12 +747,6 @@
           "System.Text.Json": "4.7.2",
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
-      },
-      "FluentValidation": {
-        "type": "CentralTransitive",
-        "requested": "[11.8.1, )",
-        "resolved": "11.8.1",
-        "contentHash": "N72rnlE99XYB7EGA1u9y7m7kNTTynqOPBhZqDE8zr1Y0aSR4t5si94LRA7UVdAV09GaXWCErW+EiFhfbg3DSbg=="
       },
       "Google.Apis.Auth": {
         "type": "CentralTransitive",

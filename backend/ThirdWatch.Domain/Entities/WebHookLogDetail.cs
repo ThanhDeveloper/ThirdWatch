@@ -1,12 +1,12 @@
-using ThirdWatch.Domain.Entities.Base;
-
 namespace ThirdWatch.Domain.Entities;
 
-public class HookLogDetail : BaseEntity
+public class WebHookLogDetail : BaseEntity
 {
     public required string Payload { get; set; }
 
     public required string Headers { get; set; }
 
-    public HookLog? HookLog { get; set; }
+    public Guid? HookLogId { get; set; }
+
+    public WebHookLog? WebHookLog { get; set; } = null!;
 }

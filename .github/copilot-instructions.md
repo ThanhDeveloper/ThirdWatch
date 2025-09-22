@@ -117,6 +117,46 @@ const handleSubmit = async () => {
 };
 ```
 
+# GitHub Copilot Instructions for ThirdWatch Backend
+
+### Backend Context
+- Asp.Net Core latest stable version
+- Entity Framework Core for ORM
+- SQL Server as the database
+- JWT for authentication and external logins like Google, Microsoft
+- Using NuGet as the package manager
+- Install packages with `dotnet add package <package-name>`
+
+## Project Structure
+- Clean Architecture principles
+- Layers: Presentation, Application, Domain, Infrastructure
+- Follow existing folder structure and naming conventions
+- Maintain consistency with current naming conventions (PascalCase for classes, camelCase for variables)
+- Use existing patterns and conventions found in the codebase
+- Always read and understand the existing codebase before making changes
+- Follow SOLID principles and best practices
+- Ensure proper error handling and logging
+
+### Core Development Rules
+- Write clean, readable, and well-documented code
+- Use meaningful variable and function names
+- Follow .NET best practices and async/await patterns
+- Implement proper validation and error handling
+- Use dependency injection for services
+- Always use latest syntax and features of C# and .NET
+
+### Banned Packages
+- Avoid using outdated or unmaintained packages
+- Avoid using packages with known security vulnerabilities
+- Avoid using packages that are not compatible with the existing codebase
+- Avoid using packages that are not widely adopted or have poor documentation
+- Avoid using packages that duplicate existing functionality in the codebase
+- Avoid using packages that are not compatible with the project's licensing
+- Avoid using packages that are not compatible with the project's performance requirements
+
+### Never install banned packages or outdated libraries:
+- Never install packages: Newtonsoft.Json (use System.Text.Json instead), AutoMapper (use manual mapping for better performance), Dapper (use Entity Framework Core instead), NLog (use built-in logging), Serilog (use built-in logging), Hangfire (use Quartz.NET instead), FluentValidation (use Data Annotations instead)
+
 ## Never Do:
 - Break existing functionality
 - Ignore responsive design requirements
@@ -125,6 +165,7 @@ const handleSubmit = async () => {
 - Skip proper validation and user feedback
 - Ignore accessibility requirements
 - Create non-reusable code when patterns exist
+- Install banned packages or outdated libraries
 
 ## Always Do:
 - Read and understand existing code first and related files
@@ -142,5 +183,6 @@ const handleSubmit = async () => {
 - Code in files should not exceed 800 lines. If it is too long, separate components for easy reuse and import
 - UI should be consistent with existing design patterns and components
 - Never add redundant comments
+- Never add banned packages
 - Don't add redundant code and console logs
 - Reuse existing components and utilities wherever possible (e.g., buttons, modals, form elements)

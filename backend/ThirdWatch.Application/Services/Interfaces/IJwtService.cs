@@ -1,5 +1,3 @@
-using ThirdWatch.Domain.Entities;
-
 namespace ThirdWatch.Application.Services.Interfaces;
 
 public interface IJwtService

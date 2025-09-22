@@ -6,8 +6,6 @@
     <EntityFrameworkVersion>9.0.0</EntityFrameworkVersion>
     <OpenTelemetryVersion>1.11.1</OpenTelemetryVersion>
     <MassTransitVersion>8.2.0</MassTransitVersion>
-    <FluentValidationVersion>11.8.1</FluentValidationVersion>
-    <AutoMapperVersion>12.0.1</AutoMapperVersion>
     <MediatRVersion>12.5.0</MediatRVersion>
     <JwtVersion>8.13.0</JwtVersion>
     <MicrosoftExtensionsVersion>9.0.7</MicrosoftExtensionsVersion>
@@ -60,11 +58,6 @@
     <!-- Authentication & Authorization -->
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="$(JwtVersion)" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="$(JwtVersion)" />
-    <!-- Validation & Mapping -->
-    <PackageVersion Include="FluentValidation" Version="$(FluentValidationVersion)" />
-    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageVersion Include="AutoMapper" Version="$(AutoMapperVersion)" />
-    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <!-- CQRS -->
     <PackageVersion Include="MediatR" Version="$(MediatRVersion)" />
     <!-- Identity -->

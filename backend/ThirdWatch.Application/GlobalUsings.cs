@@ -1,4 +1,6 @@
-global using ThirdWatch.Domain.Exceptions;
-global using ThirdWatch.Application.Services.Interfaces;
-global using ThirdWatch.Application.Exceptions;
 global using MediatR;
+global using ThirdWatch.Application.Exceptions;
+global using ThirdWatch.Application.Services.Interfaces;
+global using ThirdWatch.Domain.Entities;
+global using ThirdWatch.Domain.Exceptions;
+global using ThirdWatch.Domain.Interfaces;

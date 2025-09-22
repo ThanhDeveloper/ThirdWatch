@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ThirdWatch.Application.Handlers.Handlers.Auth;
 using ThirdWatch.Application.Services.Interfaces;
+using ThirdWatch.Infrastructure.Persistence;
+using ThirdWatch.Infrastructure.Persistence.Repositories;
 using ThirdWatch.Infrastructure.Services;
 using ThirdWatch.Shared.Helpers;
 using ThirdWatch.Shared.Options;
@@ -74,8 +76,10 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IHookLogService, HookLogService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IWebHookLogRepository, WebHookLogRepository>();
+
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<JwtHelper>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();

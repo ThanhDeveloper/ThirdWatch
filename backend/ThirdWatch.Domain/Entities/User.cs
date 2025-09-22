@@ -1,4 +1,3 @@
-using ThirdWatch.Domain.Entities.Base;
 using ThirdWatch.Domain.Enums;
 
 namespace ThirdWatch.Domain.Entities;

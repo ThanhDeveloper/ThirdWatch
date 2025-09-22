@@ -5,19 +5,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FluentValidation" />
-    <PackageReference Include="AutoMapper" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="MediatR" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Services\Implementations\" />
-    <Folder Include="Handlers\Queries\Auth\" />
-    <Folder Include="DTOs\Auth\" />
-    <Folder Include="Validators\Auth\" />
-    <Folder Include="Exceptions\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 </Project>
