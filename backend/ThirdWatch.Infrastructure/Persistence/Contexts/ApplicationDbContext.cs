@@ -9,8 +9,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public const string DbSchema = "ThirdWatch";
 
     public DbSet<User> Users => Set<User>();
-    public DbSet<WebHookLog> HookLogs => Set<WebHookLog>();
-    public DbSet<WebHookLogDetail> HookLogDetails => Set<WebHookLogDetail>();
+    public DbSet<WebhookEndpoint> WebhookEndpoints => Set<WebhookEndpoint>();
+    public DbSet<WebhookRequestLog> WebhookRequestLogs => Set<WebhookRequestLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

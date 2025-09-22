@@ -18,12 +18,9 @@ public interface IUserRepository : IRepository<User>
     Task<bool> ExistsByUsernameAsync(string username, CancellationToken cancellationToken = default);
 }
 
-public interface IWebHookLogRepository : IRepository<WebHookLog>
+public interface IWebhookEndpointRepository : IRepository<WebhookEndpoint>
 {
-    Task<WebHookLog?> GetByEndpointIdAsync(Guid endpointId, CancellationToken cancellationToken = default);
-    Task<WebHookLog?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<WebhookEndpoint?> GetByEndpointIdAsync(Guid endpointId, CancellationToken cancellationToken = default);
 }
 
-public interface IWebHookLogDetailRepository : IRepository<WebHookLogDetail>
-{
-}
+public interface IWebhookRequestLogRepository : IRepository<WebhookRequestLog> { }

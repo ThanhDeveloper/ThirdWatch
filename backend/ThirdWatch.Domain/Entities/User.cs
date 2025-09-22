@@ -26,6 +26,10 @@ public class User : BaseEntity
 
     public LoginProvider LoginProvider { get; set; }
 
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ICollection<WebhookEndpoint> WebhookEndpoints { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
+
     public string GetFullName()
     {
         return $"{FirstName} {LastName}".Trim();

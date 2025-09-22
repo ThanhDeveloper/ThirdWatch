@@ -15,11 +15,13 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     {
         _context = context;
         Users = new UserRepository(_context);
-        WebHookLogs = new WebHookLogRepository(_context);
+        WebhookEndpoints = new WebhookEndpointRepository(_context);
+        WebhookRequestLogs = new WebHookRequestLogRepository(_context);
     }
 
     public IUserRepository Users { get; }
-    public IWebHookLogRepository WebHookLogs { get; }
+    public IWebhookEndpointRepository WebhookEndpoints { get; }
+    public IWebhookRequestLogRepository WebhookRequestLogs { get; }
 
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

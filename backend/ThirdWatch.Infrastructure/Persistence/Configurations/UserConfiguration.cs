@@ -52,6 +52,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(x => x.Email)
             .IsUnique();
 
+        builder.HasMany(p => p.WebhookEndpoints)
+            .WithOne(p => p.User)
+            .HasForeignKey(p => p.UserId);
+
         builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

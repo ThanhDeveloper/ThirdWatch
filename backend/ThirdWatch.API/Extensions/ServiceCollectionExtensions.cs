@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IWebHookLogRepository, WebHookLogRepository>();
+        services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<JwtHelper>();
