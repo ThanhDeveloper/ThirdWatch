@@ -8,8 +8,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
-    <PackageReference Include="FluentValidation.AspNetCore" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
   </ItemGroup>
   
   <ItemGroup>

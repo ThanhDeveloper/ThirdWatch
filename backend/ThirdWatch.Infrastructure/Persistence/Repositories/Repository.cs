@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using ThirdWatch.Domain.Entities.Base;
 using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
 
 namespace ThirdWatch.Infrastructure.Persistence.Repositories;
 
-public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : BaseEntity
+public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : class
 {
     protected DbSet<T> DbSet { get; } = context.Set<T>();
 

@@ -20,7 +20,7 @@ public class WebHookController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<WebHookCreatedDto>), (int)HttpStatusCode.Created)]
     public async Task<IActionResult> Create([FromBody] CreateWebHookEndpointRequest request)
     {
-        var command = new WebHookCreateCommand(request.ProviderName, User.GetUserId());
+        var command = new CreateWebHookCommand(request.ProviderName, User.GetUserId());
 
         var result = await mediator.Send(command);
 
@@ -39,7 +39,7 @@ public class WebHookController(IMediator mediator) : ControllerBase
         var headers = Request.Headers
             .ToDictionary(h => h.Key, h => h.Value.ToString());
 
-        var command = new WebHookReceiveCommand(endpointId, payload, JsonSerializer.Serialize(headers));
+        var command = new WebHookReceivedCommand(endpointId, payload, JsonSerializer.Serialize(headers));
         await mediator.Send(command);
 
         return Ok(ApiResponse.SuccessResult("Received"));

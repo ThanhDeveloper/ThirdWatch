@@ -1,9 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Compile Remove="External\**" />
+    <Compile Remove="Identity\**" />
     <Compile Remove="Logging\**" />
     <Compile Remove="Persistence\Extensions\**" />
+    <EmbeddedResource Remove="External\**" />
+    <EmbeddedResource Remove="Identity\**" />
     <EmbeddedResource Remove="Logging\**" />
     <EmbeddedResource Remove="Persistence\Extensions\**" />
+    <None Remove="External\**" />
+    <None Remove="Identity\**" />
     <None Remove="Logging\**" />
     <None Remove="Persistence\Extensions\**" />
   </ItemGroup>
@@ -27,8 +33,5 @@
   
   <ItemGroup>
     <Folder Include="Persistence\Contexts\" />
-    <Folder Include="Identity\" />
-    <Folder Include="External\Services\" />
-    <Folder Include="External\Clients\" />
   </ItemGroup>
 </Project>

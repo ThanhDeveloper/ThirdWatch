@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
 
@@ -11,9 +12,11 @@ using ThirdWatch.Infrastructure.Persistence.Contexts;
 namespace ThirdWatch.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250923034209_AddOutBox")]
+    partial class AddOutBox
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -300,9 +303,6 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("ResponseStatusCode")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -325,29 +325,46 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BodyBlobUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Headers")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PayloadBlobUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset>("ReceivedAt")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<int>("ResponseStatusCode")
+                        .HasColumnType("int");
 
                     b.Property<string>("SourceIp")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<Guid>("WebhookEndpointId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("WebhookProcessingStatus")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("WebhookEndpointId");
 
-                    b.ToTable("WebhookRequestLogs");
+                    b.ToTable("WebhookRequestLogs", t =>
+                        {
+                            t.HasCheckConstraint("CK_WebhookRequestLogs_WebhookProcessingStatus_Enum", "[WebhookProcessingStatus] IN (N'Pending', N'Completed')");
+                        });
                 });
 
             modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookEndpoint", b =>

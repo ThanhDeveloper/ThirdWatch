@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ThirdWatch.Domain.Entities;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using ThirdWatch.Application.Services.Interfaces;
-using ThirdWatch.Domain.Entities;
 using ThirdWatch.Shared.Helpers;
 
 namespace ThirdWatch.Infrastructure.Services;

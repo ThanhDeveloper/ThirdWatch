@@ -78,6 +78,7 @@
     <!-- MassTransit -->
     <PackageVersion Include="MassTransit" Version="$(MassTransitVersion)" />
     <PackageVersion Include="MassTransit.Azure.ServiceBus.Core" Version="$(MassTransitVersion)" />
-    <PackageVersion Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
+    <PackageVersion Include="MassTransit.Extensions.DependencyInjection" Version="$(MassTransitVersion)" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="$(MassTransitVersion)" />
   </ItemGroup>
 </Project>

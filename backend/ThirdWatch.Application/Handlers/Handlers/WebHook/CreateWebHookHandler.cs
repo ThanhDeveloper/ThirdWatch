@@ -3,15 +3,16 @@ using ThirdWatch.Application.Handlers.Commands.WebHooks;
 
 namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
 
-public class WebHookCreateHandler(IUnitOfWork unitOfWork) : IRequestHandler<WebHookCreateCommand, WebHookCreatedDto>
+public class CreateWebHookHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateWebHookCommand, WebHookCreatedDto>
 {
-    public async Task<WebHookCreatedDto> Handle(WebHookCreateCommand request, CancellationToken cancellationToken)
+    public async Task<WebHookCreatedDto> Handle(CreateWebHookCommand request, CancellationToken cancellationToken)
     {
         var newEndpoint = new WebhookEndpoint
         {
             UserId = request.UserId,
             ProviderName = request.ProviderName,
-            EndpointId = Guid.NewGuid()
+            EndpointId = Guid.NewGuid(),
+            IsActive = true
         };
 
         await unitOfWork.WebhookEndpoints.AddAsync(newEndpoint, cancellationToken);

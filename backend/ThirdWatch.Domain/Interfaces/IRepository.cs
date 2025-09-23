@@ -1,6 +1,6 @@
 namespace ThirdWatch.Domain.Interfaces;
 
-public interface IRepository<T> where T : BaseEntity
+public interface IRepository<T>
 {
     Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);

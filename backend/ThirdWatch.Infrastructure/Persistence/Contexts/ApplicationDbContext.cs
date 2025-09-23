@@ -1,5 +1,5 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using ThirdWatch.Domain.Entities;
 using ThirdWatch.Domain.Entities.Base;
 
 namespace ThirdWatch.Infrastructure.Persistence.Contexts;
@@ -15,6 +15,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Add MassTransit outbox tables
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         base.OnModelCreating(modelBuilder);
     }
 

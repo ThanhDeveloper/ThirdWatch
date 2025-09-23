@@ -1,18 +1,19 @@
-using ThirdWatch.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace ThirdWatch.Domain.Entities;
 
-public class WebhookRequestLog : BaseEntity
+public class WebhookRequestLog
 {
-    public Uri? BodyBlobUrl { get; set; }
+    [Key]
+    public Guid Id { get; set; }
+
+    public Uri? PayloadBlobUrl { get; set; }
 
     public required string Headers { get; set; }
 
     public string? SourceIp { get; set; }
 
-    public int ResponseStatusCode { get; set; }
-
-    public WebhookProcessingStatus WebhookProcessingStatus { get; set; }
+    public DateTimeOffset ReceivedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required Guid WebhookEndpointId { get; set; }
 

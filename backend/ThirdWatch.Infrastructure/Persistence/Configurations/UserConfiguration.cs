@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ThirdWatch.Domain.Entities;
 using ThirdWatch.Domain.Enums;
 using ThirdWatch.Shared.Extensions;
 

@@ -1,11 +1,10 @@
 using System.Reflection;
 using System.Text;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ThirdWatch.Application.Handlers.Handlers.Auth;
+using ThirdWatch.Application.Services;
 using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Infrastructure.Persistence;
 using ThirdWatch.Infrastructure.Persistence.Repositories;
@@ -20,11 +19,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LoginCommandHandler).Assembly));
-
-        services.AddAutoMapper(typeof(LoginCommandHandler).Assembly);
-
-        services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssembly(typeof(LoginCommandHandler).Assembly);
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
@@ -74,7 +68,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -84,7 +78,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<JwtHelper>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
+        services.AddScoped<IEventPublisher, EventPublisher>();
+
         services.AddDatabaseServices();
+
+        services.AddMassTransitServices(configuration);
 
         return services;
     }

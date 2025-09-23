@@ -8,6 +8,10 @@ public class WebhookEndpoint : BaseEntity
 
     public required Guid UserId { get; set; }
 
+    public int ResponseStatusCode { get; set; }
+
+    public bool IsActive { get; set; }
+
     public User User { get; set; } = null!;
 
 #pragma warning disable CA2227 // Collection properties should be read only
