@@ -7,11 +7,11 @@ using ThirdWatch.Shared.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+builder.AddKeyVault(string.Empty);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddRateLimiterServices();
 builder.Services.AddSwaggerServices();
-
-builder.AddKeyVault(string.Empty);
 
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
@@ -29,6 +29,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseRateLimiter();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

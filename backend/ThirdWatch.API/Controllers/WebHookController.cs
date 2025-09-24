@@ -3,6 +3,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ThirdWatch.API.Models.Requests.WebHook;
 using ThirdWatch.Application.DTOs.WebHooks;
 using ThirdWatch.Application.Handlers.Commands.WebHooks;
@@ -30,16 +31,22 @@ public class WebHookController(IMediator mediator) : ControllerBase
 
     [AllowAnonymous]
     [HttpPost]
+    [EnableRateLimiting("WebhookRateLimit")]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.TooManyRequests)]
+#pragma warning disable IDE0060 // Remove unused parameter
     public async Task<IActionResult> Receive(Guid endpointId)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         using var reader = new StreamReader(Request.Body);
         string payload = await reader.ReadToEndAsync();
 
+        string? sourceIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+
         var headers = Request.Headers
             .ToDictionary(h => h.Key, h => h.Value.ToString());
 
-        var command = new WebHookReceivedCommand(endpointId, payload, JsonSerializer.Serialize(headers));
+        var command = new WebHookReceivedCommand(sourceIp, endpointId, payload, JsonSerializer.Serialize(headers));
         await mediator.Send(command);
 
         return Ok(ApiResponse.SuccessResult("Received"));

@@ -17,7 +17,7 @@ public sealed class WebhookReceivedConsumer(IUnitOfWork unitOfWork, ILogger<Webh
 
         logger.LogInformation("Processing webhook received event for endpoint: {EndpointId} with correlationId: {CorrelationId}", message.EndpointId, message.CorrelationId);
 
-        var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByIdAsync(message.EndpointId);
+        var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(message.EndpointId);
 
         if (existingEndpoint is null)
         {
@@ -27,10 +27,10 @@ public sealed class WebhookReceivedConsumer(IUnitOfWork unitOfWork, ILogger<Webh
 
         var requestLog = new WebhookRequestLog
         {
-            WebhookEndpointId = message.EndpointId,
+            WebhookEndpointId = existingEndpoint.Id,
             Headers = message.Headers,
-            SourceIp = string.Empty,
-            ReceivedAt = DateTimeOffset.UtcNow
+            SourceIp = message.SourceIp,
+            ReceivedAt = message.ReceivedAt
         };
 
         await unitOfWork.WebhookRequestLogs.AddAsync(requestLog);

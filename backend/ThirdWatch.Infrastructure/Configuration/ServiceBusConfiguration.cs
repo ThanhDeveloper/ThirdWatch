@@ -1,8 +1,8 @@
 namespace ThirdWatch.Infrastructure.Configuration;
 
-public sealed class MassTransitConfiguration
+public sealed class ServiceBusConfiguration
 {
-    public const string SectionName = "MassTransit";
+    public const string SectionName = "ServiceBus";
 
     public string ConnectionString { get; set; } = string.Empty;
 

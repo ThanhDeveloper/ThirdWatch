@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -83,6 +84,28 @@ public static class ServiceCollectionExtensions
         services.AddDatabaseServices();
 
         services.AddMassTransitServices(configuration);
+
+        return services;
+    }
+
+    public static IServiceCollection AddRateLimiterServices(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy("WebhookRateLimit", httpContext =>
+                    RateLimitPartition.GetSlidingWindowLimiter(
+                        partitionKey: httpContext.Request.Query["endpointId"].ToString(),
+                        factory: key => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromSeconds(10),
+                            SegmentsPerWindow = 2,
+                            QueueLimit = 0,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                        }));
+        });
 
         return services;
     }

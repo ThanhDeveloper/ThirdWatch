@@ -8,29 +8,20 @@ public class WebHookReceivedHandler(IUnitOfWork unitOfWork, IEventPublisher even
 {
     public async Task Handle(WebHookReceivedCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var webhookReceivedEvent = new WebhookReceivedIntegrationEvent(
-                request.EndpointId,
-                request.Headers,
-                request.Payload,
-                Guid.NewGuid().ToString()
-            );
+        var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(request.EndpointId, cancellationToken)
+            ?? throw new NotFoundException($"Webhook endpoint with ID {request.EndpointId} not found");
 
-            // Save changes to commit both the business logic and outbox message
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+        var webhookReceivedEvent = new WebhookReceivedIntegrationEvent(
+            request.SourceIp,
+            request.EndpointId,
+            request.Headers,
+            request.Payload,
+            DateTimeOffset.UtcNow,
+            Guid.NewGuid().ToString()
+        );
 
-            // Publish event to outbox table (within the same transaction)
-            await eventPublisher.PublishAsync(webhookReceivedEvent, cancellationToken);
+        await eventPublisher.PublishAsync(webhookReceivedEvent, cancellationToken);
 
-            // Commit transaction - this will trigger the outbox processor to send the message
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

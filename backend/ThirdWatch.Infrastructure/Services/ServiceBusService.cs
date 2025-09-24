@@ -10,7 +10,7 @@ namespace ThirdWatch.Infrastructure.Services;
 /// <summary>
 /// Extension methods for configuring MassTransit with Azure Service Bus
 /// </summary>
-public static class MassTransitService
+public static class ServiceBusService
 {
     /// <summary>
     /// Adds MassTransit services with Azure Service Bus and outbox pattern
@@ -20,21 +20,19 @@ public static class MassTransitService
     /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddMassTransitServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var massTransitConfig = configuration.GetSection(MassTransitConfiguration.SectionName).Get<MassTransitConfiguration>()
-                              ?? throw new InvalidOperationException($"MassTransit configuration section '{MassTransitConfiguration.SectionName}' is missing");
+        var massTransitConfig = configuration.GetSection(ServiceBusConfiguration.SectionName).Get<ServiceBusConfiguration>()
+                              ?? throw new InvalidOperationException($"MassTransit configuration section '{ServiceBusConfiguration.SectionName}' is missing");
 
-        services.Configure<MassTransitConfiguration>(configuration.GetSection(MassTransitConfiguration.SectionName));
+        services.Configure<ServiceBusConfiguration>(configuration.GetSection(ServiceBusConfiguration.SectionName));
 
         services.AddMassTransit(configurator =>
         {
-            // Add consumers from the current assembly
             configurator.AddConsumers(Assembly.GetExecutingAssembly());
 
             configurator.UsingAzureServiceBus((context, cfg) =>
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 
-                // Configure retry policy
                 cfg.UseMessageRetry(retryConfig =>
                 {
                     retryConfig.Incremental(
@@ -51,7 +49,8 @@ public static class MassTransitService
                 configurator.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfig =>
                 {
                     outboxConfig.UseSqlServer();
-                    outboxConfig.QueryDelay = TimeSpan.FromSeconds(10);
+                    outboxConfig.UseBusOutbox();
+                    outboxConfig.QueryDelay = TimeSpan.FromSeconds(5);
                     outboxConfig.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
                 });
             }
