@@ -144,6 +144,7 @@ const handleSubmit = async () => {
 - Implement proper validation and error handling
 - Use dependency injection for services
 - Always use latest syntax and features of C# and .NET
+- Use primary constructors for dependency injection
 
 ### Banned Packages
 - Avoid using outdated or unmaintained packages

@@ -1,6 +1,7 @@
 using ThirdWatch.API.Extensions;
 using ThirdWatch.API.Filters;
 using ThirdWatch.API.Middleware;
+using ThirdWatch.Infrastructure;
 using ThirdWatch.Infrastructure.Services;
 using ThirdWatch.Shared.Extensions;
 
@@ -16,6 +17,14 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddEndpointsApiExplorer();
+
+// to detect the original IP address of the client when behind a proxy
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+});
 
 builder.Services.AddCors(options =>
 {

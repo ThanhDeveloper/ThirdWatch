@@ -69,25 +69,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
-
-        services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<JwtHelper>();
-        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-
-        services.AddScoped<IEventPublisher, EventPublisher>();
-
-        services.AddDatabaseServices();
-
-        services.AddMassTransitServices(configuration);
-
-        return services;
-    }
-
     public static IServiceCollection AddRateLimiterServices(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
