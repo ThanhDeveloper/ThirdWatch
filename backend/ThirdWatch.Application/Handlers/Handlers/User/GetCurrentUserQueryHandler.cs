@@ -1,5 +1,4 @@
 using ThirdWatch.Application.DTOs.Users;
-using ThirdWatch.Application.Handlers.Queries.User;
 
 namespace ThirdWatch.Application.Handlers.Handlers.User;
 

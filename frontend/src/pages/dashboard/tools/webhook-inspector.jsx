@@ -5,162 +5,178 @@ import StatsBar from './webhook-inspector/StatsBar';
 import RequestList from './webhook-inspector/RequestList';
 import EndpointCreator from './webhook-inspector/EndpointCreator';
 import { toast } from 'react-toastify';
-
-// Mock data for requests with more realistic variety
-const mockRequests = [
-  {
-    id: '1',
-    method: 'POST',
-    url: '/hooks/abc123',
-    timestamp: new Date('2025-09-19T10:30:00').getTime(),
-    headers: {
-      'content-type': 'application/json',
-      'user-agent': 'GitHub-Hookshot/abc123',
-      'x-github-event': 'push',
-      'x-github-delivery': 'abc123-def456-789',
-      'x-hub-signature-256': 'sha256=valid_signature_hash_here',
-      'host': 'localhost:5173',
-      'content-length': '1024',
-    },
-    body: {
-      action: 'opened',
-      number: 123,
-      pull_request: {
-        title: 'Add new webhook feature',
-        state: 'open',
-        user: { login: 'developer123' },
-      },
-      repository: {
-        name: 'my-awesome-project',
-        full_name: 'company/my-awesome-project',
-        private: false,
-      },
-      sender: { login: 'developer123' },
-    },
-    signatureValid: true,
-  },
-  {
-    id: '2',
-    method: 'POST',
-    url: '/hooks/abc123',
-    timestamp: new Date('2025-09-19T10:25:00').getTime(),
-    headers: {
-      'content-type': 'application/json',
-      'user-agent': 'Stripe/1.0 (+https://stripe.com/docs/webhooks)',
-      'stripe-signature': 'v1=invalid_signature_here',
-      'stripe-version': '2023-10-16',
-      'host': 'localhost:5173',
-      'content-length': '512',
-    },
-    body: {
-      id: 'evt_1234567890',
-      type: 'payment_intent.succeeded',
-      data: {
-        object: {
-          id: 'pi_1234567890',
-          amount: 2000,
-          currency: 'usd',
-          status: 'succeeded',
-          customer: 'cus_1234567890',
-        },
-      },
-      created: 1695123456,
-    },
-    signatureValid: false,
-  },
-  {
-    id: '3',
-    method: 'GET',
-    url: '/hooks/abc123/health',
-    timestamp: new Date('2025-09-19T10:20:00').getTime(),
-    headers: {
-      'user-agent': 'curl/8.1.2',
-      'accept': '*/*',
-      'host': 'localhost:5173',
-    },
-    body: null,
-    signatureValid: true,
-  },
-  {
-    id: '4',
-    method: 'POST',
-    url: '/hooks/abc123',
-    timestamp: new Date('2025-09-19T10:15:00').getTime(),
-    headers: {
-      'content-type': 'application/json',
-      'user-agent': 'Slack-Hooks/1.0',
-      'x-slack-signature': 'v0=valid_slack_signature',
-      'x-slack-request-timestamp': '1695123456',
-      'host': 'localhost:5173',
-      'content-length': '256',
-    },
-    body: {
-      token: 'verification_token_here',
-      challenge: 'challenge_code_here',
-      type: 'url_verification',
-    },
-    signatureValid: true,
-  },
-  {
-    id: '5',
-    method: 'PUT',
-    url: '/hooks/abc123',
-    timestamp: new Date('2025-09-19T10:10:00').getTime(),
-    headers: {
-      'content-type': 'application/json',
-      'user-agent': 'Custom-Webhook/2.1',
-      'authorization': 'Bearer jwt_token_here',
-      'host': 'localhost:5173',
-      'content-length': '128',
-    },
-    body: {
-      event: 'user.updated',
-      user_id: '12345',
-      changes: ['email', 'name'],
-      timestamp: 1695123456,
-    },
-    signatureValid: true,
-  },
-];
+import { Card, CardBody, Typography } from '@material-tailwind/react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import webhookService from '@/services/webhookService';
 
 export function WebhookInspector() {
-  const [requests, setRequests] = useState(mockRequests);
-  const [selectedRequest, setSelectedRequest] = useState(mockRequests[0]);
-  const [currentUrl, setCurrentUrl] = useState('https://localhost:5173/hooks/abc123');
-  const [endpointId, setEndpointId] = useState('abc123');
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [activeEndpoint, setActiveEndpoint] = useState(null);
+  const [currentUrl, setCurrentUrl] = useState('');
+  const [endpointId, setEndpointId] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [isLive, setIsLive] = useState(false);
   const [lastRequestTime, setLastRequestTime] = useState(Date.now());
   const [showEndpointCreator, setShowEndpointCreator] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [hasNoEndpoint, setHasNoEndpoint] = useState(false);
+  const [requestPayloads, setRequestPayloads] = useState({}); // Cache payloads by request ID
   const intervalRef = useRef(null);
 
-  // Simulate real-time request updates
+  // Function to load payload for a specific request
+  const loadRequestPayload = async (request) => {
+    try {
+      const payload = await webhookService.getRequestPayload(request.endpointId, request.id);
+      setRequestPayloads(prev => ({
+        ...prev,
+        [request.id]: payload
+      }));
+      return payload;
+    } catch (error) {
+      console.error('Failed to load request payload:', error);
+      return null;
+    }
+  };
+
+
+
+  // Load active endpoint on component mount
   useEffect(() => {
-    if (isLive) {
-      intervalRef.current = setInterval(() => {
-        // Simulate new request (20% chance every 3 seconds)
-        if (Math.random() < 0.2) {
-          const newRequest = {
-            id: Date.now().toString(),
-            method: ['GET', 'POST', 'PUT', 'DELETE'][Math.floor(Math.random() * 4)],
-            url: `/hooks/${endpointId}`,
-            timestamp: Date.now(),
-            headers: {
-              'user-agent': 'SimulatedWebhook/1.0',
-              'content-type': 'application/json',
-              'host': 'localhost:5173',
-            },
-            body: {
-              event: 'test_event',
-              data: { id: Math.floor(Math.random() * 1000) },
-            },
-            signatureValid: Math.random() > 0.3,
-          };
+    const loadActiveEndpoint = async () => {
+      setLoading(true);
+      try {
+        const endpoint = await webhookService.getActiveEndpoint();
+        
+        if (endpoint) {
+          setActiveEndpoint(endpoint);
+          const url = endpoint || '';
+          setCurrentUrl(url);
+          // Extract endpoint ID from URL
+          const urlParts = url.split('/');
+          const extractedEndpointId = urlParts ? urlParts[urlParts.length - 1] : '';
+          setEndpointId(extractedEndpointId);
+          setHasNoEndpoint(false);
           
-          setRequests(prev => [newRequest, ...prev.slice(0, 19)]); // Keep max 20 requests
-          setLastRequestTime(Date.now());
+          // Load histories after URL is set
+          const histories = await webhookService.getHistories();
+          const transformedRequests = histories.map(history => {
+            let parsedHeaders = {};
+            try {
+              parsedHeaders = JSON.parse(history.headers || '{}');
+            } catch (e) {
+              console.warn('Failed to parse headers for request:', history.id, e);
+              parsedHeaders = {};
+            }
+
+            return {
+              id: history.id,
+              endpointId: history.endpointId, // Store endpointId from history
+              method: history.httpMethod || 'POST',
+              url: url,
+              timestamp: new Date(history.receivedAt).getTime(),
+              headers: parsedHeaders,
+              body: null, // Will be loaded separately
+            };
+          });
+          
+          setRequests(transformedRequests);
+          
+          // Auto-load payload for the first request
+          if (transformedRequests.length > 0) {
+            const firstRequest = transformedRequests[0];
+            setSelectedRequest(firstRequest);
+            await loadRequestPayload(firstRequest);
+          }
+        } else {
+          setHasNoEndpoint(true);
+          setActiveEndpoint(null);
+          setCurrentUrl('');
+          setEndpointId('');
+          setRequests([]);
         }
-      }, 3000);
+      } catch (error) {
+        console.error('Failed to load active endpoint:', error);
+        toast.error('Failed to load webhook endpoint');
+        setHasNoEndpoint(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadActiveEndpoint();
+  }, []);
+
+  // Load request histories
+  const loadRequestHistories = async () => {
+    try {
+      const histories = await webhookService.getHistories();
+      // Transform API data to match component structure
+      const transformedRequests = histories.map(history => {
+        // Parse headers JSON string
+        let parsedHeaders = {};
+        try {
+          parsedHeaders = JSON.parse(history.headers || '{}');
+        } catch (e) {
+          console.warn('Failed to parse headers for request:', history.id, e);
+          parsedHeaders = {};
+        }
+
+        return {
+          id: history.id,
+          method: history.httpMethod || 'POST',
+          url: currentUrl || 'Unknown URL',
+          timestamp: new Date(history.receivedAt).getTime(),
+          headers: parsedHeaders,
+          body: null, // Will be loaded separately when needed
+        };
+      });
+      
+      setRequests(transformedRequests);
+      
+      // Select the first request if available
+      if (transformedRequests.length > 0 && !selectedRequest) {
+        setSelectedRequest(transformedRequests[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load request histories:', error);
+      toast.error('Failed to load request histories');
+    }
+  };
+
+  // Simulate real-time request updates (keep for live mode simulation)
+  useEffect(() => {
+    if (isLive && activeEndpoint && currentUrl) {
+      intervalRef.current = setInterval(async () => {
+        // Refresh histories from API
+        try {
+          const histories = await webhookService.getHistories();
+          const transformedRequests = histories.map(history => {
+            let parsedHeaders = {};
+            try {
+              parsedHeaders = JSON.parse(history.headers || '{}');
+            } catch (e) {
+              console.warn('Failed to parse headers for request:', history.id, e);
+              parsedHeaders = {};
+            }
+
+            return {
+              id: history.id,
+              endpointId: history.endpointId, // Store endpointId from history
+              method: history.httpMethod || 'POST',
+              url: currentUrl,
+              timestamp: new Date(history.receivedAt).getTime(),
+              headers: parsedHeaders,
+              body: null,
+            };
+          });
+          
+          setRequests(transformedRequests);
+          setLastRequestTime(Date.now());
+        } catch (error) {
+          console.error('Failed to refresh histories:', error);
+        }
+      }, 5000); // Check every 5 seconds
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -171,29 +187,45 @@ export function WebhookInspector() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isLive, endpointId]);
+  }, [isLive, activeEndpoint, currentUrl]);
 
-  const handleNewEndpoint = useCallback(() => {
-    setShowEndpointCreator(true);
+  // Handle request selection and load payload if needed
+  const handleRequestSelection = async (request) => {
+    setSelectedRequest(request);
+    
+    // Load payload if not already cached
+    if (!requestPayloads[request.id]) {
+      await loadRequestPayload(request);
+    }
+  };
+
+  const handleCreateEndpoint = useCallback(async (providerName, httpMethod) => {
+    try {
+      const newEndpoint = await webhookService.createEndpoint(providerName, httpMethod);
+      
+      // Update state with new endpoint
+      setActiveEndpoint(newEndpoint);
+      const url = newEndpoint || ''; // newEndpoint đã là URL string
+      setCurrentUrl(url);
+      // Extract endpoint ID from URL
+      const urlParts = url.split('/');
+      const extractedEndpointId = urlParts ? urlParts[urlParts.length - 1] : '';
+      setEndpointId(extractedEndpointId);
+      setRequests([]); // Clear previous requests
+      setSelectedRequest(null);
+      setIsLive(false); // Stop live mode for new endpoint
+      setHasNoEndpoint(false);
+      
+      toast.success(`New webhook endpoint created for ${providerName}`, {
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to create endpoint:', error);
+      toast.error('Failed to create webhook endpoint');
+    }
   }, []);
 
-  const handleCreateEndpoint = useCallback((newEndpointId) => {
-    const newUrl = `https://localhost:5173/hooks/${newEndpointId}`;
-    
-    // Simulate endpoint creation
-    setEndpointId(newEndpointId);
-    setCurrentUrl(newUrl);
-    setRequests([]); // Clear previous requests
-    setSelectedRequest(null);
-    setIsLive(false); // Stop live mode for new endpoint
-    
-    toast.success(`New endpoint created: ${newEndpointId}`, {
-      autoClose: 3000,
-    });
-    console.log('New endpoint created:', newUrl);
-  }, []);
-
-  const handleClearLogs = useCallback(() => {
+  const handleClearLogs = useCallback(async () => {
     setRequests([]);
     setSelectedRequest(null);
     toast.info('All logs cleared');
@@ -202,7 +234,7 @@ export function WebhookInspector() {
   const toggleLiveMode = useCallback(() => {
     setIsLive(prev => {
       const newLiveState = !prev;
-      toast.info(newLiveState ? 'Live mode activated' : 'Live mode deactivated');
+      toast.info(newLiveState ? 'Live mode activated - checking for new requests...' : 'Live mode deactivated');
       return newLiveState;
     });
   }, []);
@@ -250,14 +282,66 @@ export function WebhookInspector() {
     return JSON.stringify(data, null, 2);
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="mt-8 flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Typography color="gray">Loading webhook endpoint...</Typography>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no endpoint state
+  if (hasNoEndpoint) {
+    return (
+      <div className="mt-8">
+        <Card className="border border-amber-200 bg-amber-50">
+          <CardBody className="text-center py-12">
+            <ExclamationTriangleIcon className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+            <Typography variant="h4" color="amber" className="mb-2">
+              No Webhook Endpoint Found
+            </Typography>
+            <Typography color="gray" className="mb-6 max-w-md mx-auto">
+              You don't have any active webhook endpoint yet. Create one to start receiving and inspecting HTTP requests in real-time.
+            </Typography>
+            <div className="space-y-4">
+              <button
+                onClick={() => setShowEndpointCreator(true)}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Create Your First Endpoint
+              </button>
+              <div className="text-sm text-gray-600">
+                <p>✨ Get started with webhook inspection</p>
+                <p>🔍 Monitor requests in real-time</p>
+                <p>📊 Analyze headers and payloads</p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Endpoint Creator Dialog */}
+        <EndpointCreator
+          open={showEndpointCreator}
+          onClose={() => setShowEndpointCreator(false)}
+          onCreateEndpoint={handleCreateEndpoint}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="mt-8">
       <WebhookHeader
+        key={currentUrl} // Force re-render when URL changes
         currentUrl={currentUrl}
         isLive={isLive}
         requestsCount={requests.length}
         lastRequestTime={lastRequestTime}
-        onNewEndpoint={handleNewEndpoint}
+        onNewEndpoint={() => setShowEndpointCreator(true)}
         onToggleLiveMode={toggleLiveMode}
         onClearLogs={handleClearLogs}
         onExportLogs={exportRequests}
@@ -273,7 +357,7 @@ export function WebhookInspector() {
           <RequestList
             requests={requests}
             selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
+            onSelectRequest={handleRequestSelection}
             formatTimestamp={formatTimestamp}
             getMethodColor={getMethodColor}
             truncateJson={truncateJson}
@@ -288,6 +372,7 @@ export function WebhookInspector() {
             onTabChange={setActiveTab}
             formatTimestamp={formatTimestamp}
             getMethodColor={getMethodColor}
+            requestPayload={selectedRequest ? requestPayloads[selectedRequest.id] : null}
           />
         </div>
       </div>

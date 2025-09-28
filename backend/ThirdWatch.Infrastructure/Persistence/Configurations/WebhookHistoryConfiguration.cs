@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 
-public class WebhookRequestLogConfiguration : IEntityTypeConfiguration<WebhookRequestLog>
+public class WebhookHistoryConfiguration : IEntityTypeConfiguration<WebhookHistory>
 {
-    public void Configure(EntityTypeBuilder<WebhookRequestLog> builder)
+    public void Configure(EntityTypeBuilder<WebhookHistory> builder)
     {
         builder.HasKey(x => x.Id);
 
@@ -14,7 +14,7 @@ public class WebhookRequestLogConfiguration : IEntityTypeConfiguration<WebhookRe
         builder.Property(x => x.PayloadBlobUrl).HasMaxLength(255);
 
         builder.HasOne(p => p.WebhookEndpoint)
-            .WithMany(o => o.WebhookRequestLogs)
+            .WithMany(o => o.WebhookHistories)
             .HasForeignKey(p => p.WebhookEndpointId);
     }
 }

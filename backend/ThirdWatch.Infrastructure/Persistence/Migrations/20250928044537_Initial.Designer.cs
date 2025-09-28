@@ -12,8 +12,8 @@ using ThirdWatch.Infrastructure.Persistence.Contexts;
 namespace ThirdWatch.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250923074358_RefactorTable")]
-    partial class RefactorTable
+    [Migration("20250928044537_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -292,6 +292,11 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("EndpointId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("HttpMethod")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -319,10 +324,13 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WebhookEndpoints");
+                    b.ToTable("WebhookEndpoints", t =>
+                        {
+                            t.HasCheckConstraint("CK_WebhookEndpoints_HttpMethod_Enum", "[HttpMethod] IN (N'Post', N'Get')");
+                        });
                 });
 
-            modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookRequestLog", b =>
+            modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -333,6 +341,7 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PayloadBlobUrl")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -350,7 +359,7 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("WebhookEndpointId");
 
-                    b.ToTable("WebhookRequestLogs");
+                    b.ToTable("WebhookHistories");
                 });
 
             modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookEndpoint", b =>
@@ -364,10 +373,10 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookRequestLog", b =>
+            modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookHistory", b =>
                 {
                     b.HasOne("ThirdWatch.Domain.Entities.WebhookEndpoint", "WebhookEndpoint")
-                        .WithMany("WebhookRequestLogs")
+                        .WithMany("WebhookHistories")
                         .HasForeignKey("WebhookEndpointId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -382,7 +391,7 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookEndpoint", b =>
                 {
-                    b.Navigation("WebhookRequestLogs");
+                    b.Navigation("WebhookHistories");
                 });
 #pragma warning restore 612, 618
         }

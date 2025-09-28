@@ -110,18 +110,30 @@ const WebhookHeader = ({
           </Typography>
         </div>
         <div className="flex items-center gap-2">
-          <Input
-            value={currentUrl}
+          <input
+            type="text"
+            value={currentUrl || ''}
             readOnly
-            className="font-mono text-sm"
-            containerProps={{ className: "min-w-0 flex-1" }}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              backgroundColor: 'white',
+              color: '#374151'
+            }}
+            placeholder="No active endpoint"
           />
           <CopyButton
-            content={currentUrl}
+            content={currentUrl || ''}
             isIcon
             size="sm"
             variant="text"
             successMessage="URL copied!"
+            disabled={!currentUrl}
           />
         </div>
       </div>

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Mime;
-using System.Text.Json;
 using ThirdWatch.Application.Exceptions;
 using ThirdWatch.Domain.Exceptions;
 

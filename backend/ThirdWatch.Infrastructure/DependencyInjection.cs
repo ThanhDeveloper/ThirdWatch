@@ -3,7 +3,6 @@ using Azure.Storage.Blobs;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ThirdWatch.Application.Services;
 using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Infrastructure.Configuration;
@@ -22,11 +21,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
-
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<JwtHelper>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-
+        services.AddScoped<JwtHelper>();
         services.AddScoped<IEventPublisher, EventPublisher>();
 
         services.AddDatabaseServices();
@@ -45,9 +42,9 @@ public static class DependencyInjection
 
         services.Configure<AzureStorageConfiguration>(configuration.GetSection(AzureStorageConfiguration.SectionName));
 
-        services.AddSingleton(_ => new BlobServiceClient(azureStorageConfig.ConnectionString));
-
         services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
+        services.AddSingleton(_ => new BlobServiceClient(azureStorageConfig.ConnectionString));
+        services.AddSingleton<ICompressionService, GzipCompressionService>();
 
         return services;
     }

@@ -1,6 +1,6 @@
 using ThirdWatch.Domain.Events.Base;
 
-namespace ThirdWatch.Domain.Events.WebhookReceived;
+namespace ThirdWatch.Domain.Events.WebhookRequestReceived;
 
 /// <summary>
 /// Integration event published when a webhook is received and logged
@@ -10,7 +10,7 @@ namespace ThirdWatch.Domain.Events.WebhookReceived;
 /// <param name="Headers">The raw headers received</param>
 /// <param name="Payload">The raw payload received</param>
 /// <param name="CorrelationId">The correlation ID for tracing</param>
-public sealed record WebhookReceivedIntegrationEvent(
+public sealed record WebhookRequestReceivedIntegrationEvent(
     string? SourceIp,
     Guid EndpointId,
     string Headers,

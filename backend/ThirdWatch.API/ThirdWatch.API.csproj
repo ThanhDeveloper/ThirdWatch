@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
+    <Compile Remove="Models\Responses\**" />
+    <Content Remove="Models\Responses\**" />
+    <EmbeddedResource Remove="Models\Responses\**" />
+    <None Remove="Models\Responses\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ThirdWatch.Application\ThirdWatch.Application.csproj" />
     <ProjectReference Include="..\ThirdWatch.Infrastructure\ThirdWatch.Infrastructure.csproj" />
     <ProjectReference Include="..\ThirdWatch.Shared\ThirdWatch.Shared.csproj" />
@@ -12,6 +18,5 @@
   
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="Models\Responses\" />
   </ItemGroup>
 </Project>

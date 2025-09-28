@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardBody, Typography, Chip } from '@material-tailwind/react';
-import { CheckCircleIcon, ExclamationTriangleIcon, ClockIcon, EyeIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, EyeIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
 const RequestList = ({
   requests,
@@ -60,12 +60,19 @@ const RequestList = ({
                       size="sm"
                       className="text-xs font-semibold"
                     />
+                    {/* Show content type if available */}
+                    {request.headers?.['content-type'] && (
+                      <Typography variant="small" color="gray" className="text-xs">
+                        {request.headers['content-type'].split(';')[0]}
+                      </Typography>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
-                    {request.signatureValid ? (
-                      <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <ExclamationTriangleIcon className="h-4 w-4 text-orange-500" />
+                    {/* Show size if available */}
+                    {request.headers?.['content-length'] && (
+                      <Typography variant="small" color="gray" className="text-xs">
+                        {request.headers['content-length']}b
+                      </Typography>
                     )}
                   </div>
                 </div>
@@ -86,7 +93,7 @@ const RequestList = ({
                 {/* Request source indicator */}
                 <div className="mt-2 pt-2 border-t border-gray-100">
                   <Typography variant="small" color="gray" className="text-xs">
-                    {request.headers['user-agent']?.split('/')[0] || 'Unknown'}
+                    {request.headers?.['user-agent']?.split('/')[0] || 'Unknown'}
                   </Typography>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 using MassTransit;
-using ThirdWatch.Application.Services;
+using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Domain.Events.Base;
 
 namespace ThirdWatch.Infrastructure.Services;

@@ -3,7 +3,6 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ThirdWatch.Application.DTOs.Users;
-using ThirdWatch.Application.Handlers.Queries.User;
 using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.API.Controllers;
@@ -19,7 +18,7 @@ public class UserController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var user = await mediator.Send(new GetCurrentUserQuery { UserId = User.GetUserId() });
+        var user = await mediator.Send(new GetCurrentUserQuery(User.GetUserId()));
 
         return Ok(ApiResponse<UserResponseDto>.SuccessResult(user));
     }

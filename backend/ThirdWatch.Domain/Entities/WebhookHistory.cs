@@ -2,12 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ThirdWatch.Domain.Entities;
 
-public class WebhookRequestLog
+public class WebhookHistory
 {
     [Key]
     public Guid Id { get; set; }
 
-    public Uri? PayloadBlobUrl { get; set; }
+    public required Uri PayloadBlobUrl { get; set; }
 
     public required string Headers { get; set; }
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 
@@ -11,7 +12,9 @@ public class WebhookEndpointConfiguration : IEntityTypeConfiguration<WebhookEndp
 
         builder.Property(x => x.ProviderName).HasMaxLength(100);
 
-        builder.HasMany(x => x.WebhookRequestLogs)
+        builder.Property(x => x.HttpMethod).HasEnumToStringConversion();
+
+        builder.HasMany(x => x.WebhookHistories)
             .WithOne(x => x.WebhookEndpoint)
             .HasForeignKey(x => x.WebhookEndpointId);
 

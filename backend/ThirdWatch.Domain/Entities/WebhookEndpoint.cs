@@ -1,3 +1,5 @@
+using ThirdWatch.Domain.Enums;
+
 namespace ThirdWatch.Domain.Entities;
 
 public class WebhookEndpoint : BaseEntity
@@ -12,9 +14,11 @@ public class WebhookEndpoint : BaseEntity
 
     public bool IsActive { get; set; }
 
+    public required HttpMethodType HttpMethod { get; set; }
+
     public User User { get; set; } = null!;
 
 #pragma warning disable CA2227 // Collection properties should be read only
-    public ICollection<WebhookRequestLog> WebhookRequestLogs { get; set; } = [];
+    public ICollection<WebhookHistory> WebhookHistories { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 }

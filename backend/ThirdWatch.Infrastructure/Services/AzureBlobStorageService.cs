@@ -1,11 +1,11 @@
 using System.Globalization;
-using System.IO.Compression;
-using System.Text;
+using System.Net.Mime;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ThirdWatch.Application.Services;
+using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Infrastructure.Configuration;
 
 namespace ThirdWatch.Infrastructure.Services;
@@ -16,97 +16,84 @@ public sealed class AzureBlobStorageService(
     ILogger<AzureBlobStorageService> logger) : IBlobStorageService
 {
     private readonly AzureStorageConfiguration _configuration = configuration.Value;
-    private BlobContainerClient? _containerClient;
-
-    public async Task<Uri> UploadJsonAsync(string json, string fileName, CancellationToken cancellationToken = default)
+    // Lazy initialization to ensure container is created only once
+    private readonly Lazy<Task<BlobContainerClient>> _containerClient = new(async () =>
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+        var containerClient = blobServiceClient.GetBlobContainerClient(configuration.Value.ContainerName);
+        await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
+        return containerClient;
+    });
+
+    public async Task<Uri> UploadAsync(
+        Stream fileStream,
+        string fileName,
+        string? contentType = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(fileStream);
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
 
-        await EnsureContainerExistsAsync(cancellationToken);
-
+        var containerClient = await _containerClient.Value;
         string blobName = GenerateBlobName(fileName);
-        var blobClient = _containerClient!.GetBlobClient(blobName);
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         try
         {
-            byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
-            const string contentType = "application/json";
             var metadata = new Dictionary<string, string>
             {
-                { "original_size", jsonBytes.Length.ToString(CultureInfo.InvariantCulture) },
-                { "created_at", DateTimeOffset.UtcNow.ToString("O") }
+                { "uploaded_at", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture) },
+                { "original_filename", fileName }
             };
-
-            byte[] dataToUpload;
-            if (_configuration.EnableCompression)
-            {
-                dataToUpload = CompressData(jsonBytes);
-                metadata.Add("compression", "gzip");
-                metadata.Add("compressed_size", dataToUpload.Length.ToString(CultureInfo.InvariantCulture));
-
-                logger.LogInformation("Compressed JSON payload from {OriginalSize} to {CompressedSize} bytes (ratio: {CompressionRatio:P2})",
-                    jsonBytes.Length, dataToUpload.Length, (double)dataToUpload.Length / jsonBytes.Length);
-            }
-            else
-            {
-                dataToUpload = jsonBytes;
-            }
-
-            using var stream = new MemoryStream(dataToUpload);
 
             var blobHttpHeaders = new BlobHttpHeaders
             {
-                ContentType = contentType,
-                ContentEncoding = _configuration.EnableCompression ? "gzip" : null
+                ContentType = contentType ?? GetContentType(fileName)
             };
 
+            // Use optimized upload options for large files
             var uploadOptions = new BlobUploadOptions
             {
                 HttpHeaders = blobHttpHeaders,
                 Metadata = metadata,
-                AccessTier = GetAccessTier(_configuration.DefaultBlobAccessTier)
+                AccessTier = GetAccessTier(_configuration.DefaultBlobAccessTier),
+                TransferOptions = new StorageTransferOptions
+                {
+                    InitialTransferSize = Environment.ProcessorCount,
+                    MaximumTransferSize = 4 * 1024 * 1024  // 4MB chunks
+                }
             };
 
-            await blobClient.UploadAsync(stream, uploadOptions, cancellationToken);
+            await blobClient.UploadAsync(fileStream, uploadOptions, cancellationToken);
 
-            logger.LogInformation("Successfully uploaded blob {BlobName} with size {Size} bytes", blobName, dataToUpload.Length);
+            logger.LogInformation("Successfully uploaded blob {BlobName} to container {ContainerName}",
+                blobName, _configuration.ContainerName);
 
             return blobClient.Uri;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to upload blob {BlobName}", blobName);
+            logger.LogError(ex, "Failed to upload blob {BlobName} to container {ContainerName}",
+                blobName, _configuration.ContainerName);
             throw;
         }
     }
 
-    public async Task<string> DownloadJsonAsync(Uri blobUri, CancellationToken cancellationToken = default)
+    public async Task<Stream> DownloadAsync(Uri blobUri, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(blobUri);
 
-        var blobClient = new BlobClient(blobUri);
+        string blobName = ExtractBlobName(blobUri);
+        var containerClient = await _containerClient.Value;
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         try
         {
-            var response = await blobClient.DownloadContentAsync(cancellationToken);
-            var content = response.Value.Content;
-            var properties = response.Value.Details;
+            var response = await blobClient.DownloadStreamingAsync(cancellationToken: cancellationToken);
 
-            byte[] data = content.ToArray();
+            logger.LogDebug("Successfully downloaded blob {BlobName} from container {ContainerName}",
+                blobName, _configuration.ContainerName);
 
-            // Check if data is compressed
-            bool isCompressed = properties.Metadata.ContainsKey("compression") &&
-                               properties.Metadata["compression"] == "gzip";
-
-            if (isCompressed)
-            {
-                data = DecompressData(data);
-                logger.LogDebug("Decompressed blob data from {CompressedSize} to {OriginalSize} bytes",
-                    content.ToArray().Length, data.Length);
-            }
-
-            return Encoding.UTF8.GetString(data);
+            return response.Value.Content;
         }
         catch (Exception ex)
         {
@@ -119,97 +106,141 @@ public sealed class AzureBlobStorageService(
     {
         ArgumentNullException.ThrowIfNull(blobUri);
 
-        var blobClient = new BlobClient(blobUri);
+        string blobName = ExtractBlobName(blobUri);
+        var containerClient = await _containerClient.Value;
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         try
         {
-            var response = await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots, cancellationToken: cancellationToken);
+            var response = await blobClient.DeleteIfExistsAsync(
+                DeleteSnapshotsOption.IncludeSnapshots,
+                cancellationToken: cancellationToken);
 
             if (response.Value)
             {
-                logger.LogInformation("Successfully deleted blob {BlobUri}", blobUri);
+                logger.LogInformation("Successfully deleted blob {BlobName} from container {ContainerName}",
+                    blobName, _configuration.ContainerName);
             }
             else
             {
-                logger.LogWarning("Blob {BlobUri} does not exist or was already deleted", blobUri);
+                logger.LogWarning("Blob {BlobName} does not exist in container {ContainerName}",
+                    blobName, _configuration.ContainerName);
             }
 
             return response.Value;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to delete blob {BlobUri}", blobUri);
+            logger.LogError(ex, "Failed to delete blob from {BlobUri}", blobUri);
             throw;
         }
     }
 
-    public async Task EnsureContainerExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(Uri blobUri, CancellationToken cancellationToken = default)
     {
-        if (_containerClient is not null)
-        {
-            return;
-        }
+        ArgumentNullException.ThrowIfNull(blobUri);
+
+        string blobName = ExtractBlobName(blobUri);
+        var containerClient = await _containerClient.Value;
+        var blobClient = containerClient.GetBlobClient(blobName);
 
         try
         {
-            _containerClient = blobServiceClient.GetBlobContainerClient(_configuration.ContainerName);
-
-            var response = await _containerClient.CreateIfNotExistsAsync(
-                PublicAccessType.None,
-                cancellationToken: cancellationToken);
-
-            if (response?.Value is not null)
-            {
-                logger.LogInformation("Created new blob container: {ContainerName}", _configuration.ContainerName);
-            }
-            else
-            {
-                logger.LogDebug("Blob container {ContainerName} already exists", _configuration.ContainerName);
-            }
+            var response = await blobClient.ExistsAsync(cancellationToken);
+            return response.Value;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to ensure container {ContainerName} exists", _configuration.ContainerName);
+            logger.LogError(ex, "Failed to check if blob exists {BlobUri}", blobUri);
             throw;
         }
+    }
+
+    public async Task<Dictionary<string, string>> GetMetadataAsync(Uri blobUri, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(blobUri);
+
+        string blobName = ExtractBlobName(blobUri);
+        var containerClient = await _containerClient.Value;
+        var blobClient = containerClient.GetBlobClient(blobName);
+
+        try
+        {
+            var response = await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken);
+            return response.Value.Metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get metadata for blob {BlobUri}", blobUri);
+            throw;
+        }
+    }
+
+    private static string ExtractBlobName(Uri blobUri)
+    {
+        string[] segments = blobUri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length < 2)
+        {
+            throw new ArgumentException("Invalid blob URI format", nameof(blobUri));
+        }
+
+        // Skip container name (first segment) and return the blob path
+        return string.Join("/", segments.Skip(1));
     }
 
     private static string GenerateBlobName(string fileName)
     {
-        string timestamp = DateTimeOffset.UtcNow.ToString("yyyy/MM/dd/HH", CultureInfo.InvariantCulture);
-        string uniqueId = Guid.NewGuid().ToString("N")[..8];
+        string datePath = DateTimeOffset.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+        string uniqueId = Guid.NewGuid().ToString("N")[..12]; // 12 chars for shorter names
         string sanitizedFileName = SanitizeFileName(fileName);
 
-        return $"webhooks/{timestamp}/{sanitizedFileName}_{uniqueId}.json";
+        // Keep original extension for proper content type detection
+        string extension = Path.GetExtension(sanitizedFileName);
+        string nameWithoutExt = Path.GetFileNameWithoutExtension(sanitizedFileName);
+
+        return $"files/{datePath}/{nameWithoutExt}_{uniqueId}{extension}";
     }
 
     private static string SanitizeFileName(string fileName)
     {
-        char[] invalidChars = Path.GetInvalidFileNameChars();
+        // Keep only safe characters for blob names
+        char[] invalidChars = [.. Path.GetInvalidFileNameChars(), '<', '>', ':', '"', '|', '?', '*', ' '];
+
         string sanitized = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
-        return string.IsNullOrWhiteSpace(sanitized) ? "payload" : sanitized;
+        return string.IsNullOrWhiteSpace(sanitized) ? "file" : sanitized;
     }
 
-    private static byte[] CompressData(byte[] data)
+    private static string GetContentType(string fileName)
     {
-        using var output = new MemoryStream();
-        using (var gzipStream = new GZipStream(output, CompressionLevel.Optimal))
+        string extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+        return extension switch
         {
-            gzipStream.Write(data, 0, data.Length);
-        }
-        return output.ToArray();
+            ".json" => MediaTypeNames.Application.Json,
+            ".xml" => MediaTypeNames.Application.Xml,
+            ".pdf" => MediaTypeNames.Application.Pdf,
+            ".zip" => MediaTypeNames.Application.Zip,
+            ".txt" => MediaTypeNames.Text.Plain,
+            ".html" => MediaTypeNames.Text.Html,
+            ".css" => "text/css",
+            ".js" => "application/javascript",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".svg" => "image/svg+xml",
+            ".mp4" => "video/mp4",
+            ".mp3" => "audio/mpeg",
+            ".wav" => "audio/wav",
+            ".csv" => "text/csv",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            _ => MediaTypeNames.Application.Octet
+        };
     }
 
-    private static byte[] DecompressData(byte[] compressedData)
-    {
-        using var input = new MemoryStream(compressedData);
-        using var gzipStream = new GZipStream(input, CompressionMode.Decompress);
-        using var output = new MemoryStream();
-        gzipStream.CopyTo(output);
-        return output.ToArray();
-    }
-
-    private static AccessTier? GetAccessTier(string tierName)
+    private static AccessTier GetAccessTier(string tierName)
     {
         return tierName.ToUpperInvariant() switch
         {

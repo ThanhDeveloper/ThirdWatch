@@ -10,154 +10,94 @@ import {
   Card,
   CardBody,
   Chip,
+  Select,
+  Option,
 } from '@material-tailwind/react';
-import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import CopyButton from '@/components/common/CopyButton';
 
 const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
-  const [customId, setCustomId] = useState('');
-  const [generatedId, setGeneratedId] = useState('');
-  const [isCustom, setIsCustom] = useState(false);
+  const [providerName, setProviderName] = useState('');
+  const [httpMethod, setHttpMethod] = useState('POST');
+  const [loading, setLoading] = useState(false);
 
-  const generateRandomId = () => {
-    return Math.random().toString(36).substr(2, 9);
-  };
-
-  const handleGenerate = () => {
-    const newId = generateRandomId();
-    setGeneratedId(newId);
-    setIsCustom(false);
-    setCustomId('');
-  };
-
-  const handleCreate = () => {
-    const endpointId = isCustom ? customId : generatedId;
-    if (!endpointId.trim()) {
-      handleGenerate();
+  const handleCreate = async () => {
+    if (!providerName.trim()) {
       return;
     }
-    onCreateEndpoint(endpointId.trim());
+
+    setLoading(true);
+    try {
+      await onCreateEndpoint(providerName.trim(), httpMethod);
+      onClose();
+      // Reset state
+      setProviderName('');
+      setHttpMethod('POST');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    // Reset state when closing
+    setProviderName('');
+    setHttpMethod('POST');
+    setLoading(false);
     onClose();
-    // Reset state
-    setCustomId('');
-    setGeneratedId('');
-    setIsCustom(false);
   };
-
-  const handleCustomToggle = () => {
-    setIsCustom(!isCustom);
-    if (!isCustom) {
-      setGeneratedId('');
-    }
-  };
-
-  const currentEndpointId = isCustom ? customId : generatedId;
-  const currentUrl = currentEndpointId ? `https://localhost:5173/hooks/${currentEndpointId}` : '';
-
-  // Generate initial ID when dialog opens
-  React.useEffect(() => {
-    if (open && !generatedId && !isCustom) {
-      handleGenerate();
-    }
-  }, [open, generatedId, isCustom]);
 
   return (
-    <Dialog open={open} handler={onClose} size="lg">
+    <Dialog open={open} handler={handleClose} size="lg">
       <DialogHeader className="flex items-center justify-between">
         <Typography variant="h5" color="blue-gray">
           Create New Webhook Endpoint
         </Typography>
       </DialogHeader>
       
-      <DialogBody className="space-y-4">
+      <DialogBody className="space-y-6">
         <Typography color="gray" className="mb-4">
-          Generate a new webhook endpoint to receive and inspect HTTP requests in real-time.
+          Create a new webhook endpoint to receive and inspect HTTP requests in real-time.
         </Typography>
 
-        {/* Endpoint ID Configuration */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-4">
-            <Button
-              variant={!isCustom ? "filled" : "outlined"}
-              color="blue"
-              size="sm"
-              onClick={() => !isCustom && handleGenerate()}
-              disabled={isCustom}
-            >
-              Auto Generate
-            </Button>
-            <Button
-              variant={isCustom ? "filled" : "outlined"}
-              color="gray"
-              size="sm"
-              onClick={handleCustomToggle}
-            >
-              Custom ID
-            </Button>
-          </div>
-
-          {isCustom ? (
-            <div>
-              <Typography variant="small" color="gray" className="mb-1">
-                Custom Endpoint ID
-              </Typography>
-              <Input
-                value={customId}
-                onChange={(e) => setCustomId(e.target.value)}
-                placeholder="Enter custom ID (e.g., my-webhook-123)"
-                className="font-mono"
-              />
-              <Typography variant="small" color="gray" className="mt-1">
-                Only alphanumeric characters and hyphens allowed
-              </Typography>
-            </div>
-          ) : (
-            <div>
-              <Typography variant="small" color="gray" className="mb-1">
-                Generated Endpoint ID
-              </Typography>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={generatedId}
-                  readOnly
-                  className="font-mono"
-                />
-                <Button
-                  variant="outlined"
-                  size="sm"
-                  onClick={handleGenerate}
-                  className="flex-shrink-0"
-                >
-                  Regenerate
-                </Button>
-              </div>
-            </div>
-          )}
+        {/* Provider Name Input */}
+        <div>
+          <Typography variant="small" color="gray" className="mb-2 font-medium">
+            Provider Name *
+          </Typography>
+          <Input
+            value={providerName}
+            onChange={(e) => setProviderName(e.target.value)}
+            placeholder="e.g., GitHub, Stripe, PayPal, Discord"
+            className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+            labelProps={{
+              className: "before:content-none after:content-none",
+            }}
+          />
+          <Typography variant="small" color="gray" className="mt-1">
+            Enter the name of the service that will send webhooks to this endpoint
+          </Typography>
         </div>
 
-        {/* Preview URL */}
-        {currentUrl && (
-          <Card className="bg-gray-50">
-            <CardBody className="py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Typography variant="small" color="gray" className="mb-1">
-                    Your new webhook URL will be:
-                  </Typography>
-                  <Typography className="font-mono text-sm break-all">
-                    {currentUrl}
-                  </Typography>
-                </div>
-                <CopyButton
-                  content={currentUrl}
-                  isIcon
-                  variant="text"
-                  successMessage="URL copied!"
-                />
-              </div>
-            </CardBody>
-          </Card>
-        )}
+        {/* HTTP Method Selection */}
+        <div>
+          <Typography variant="small" color="gray" className="mb-2 font-medium">
+            HTTP Method *
+          </Typography>
+          <Select 
+            value={httpMethod} 
+            onChange={(value) => setHttpMethod(value)}
+            className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+            labelProps={{
+              className: "before:content-none after:content-none",
+            }}
+          >
+            <Option value="POST">POST</Option>
+            <Option value="GET">GET</Option>
+          </Select>
+          <Typography variant="small" color="gray" className="mt-1">
+            Choose the HTTP method for your webhook endpoint
+          </Typography>
+        </div>
 
         {/* Features Overview */}
         <div className="bg-blue-50 p-4 rounded-lg">
@@ -175,7 +115,11 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-green-600" />
-              <Typography variant="small" color="gray">Signature validation</Typography>
+              <Typography variant="small" color="gray">Request history tracking</Typography>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-green-600" />
+              <Typography variant="small" color="gray">JSON payload analysis</Typography>
             </div>
           </div>
         </div>
@@ -183,25 +127,25 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
         {/* Usage Examples */}
         <div>
           <Typography variant="small" className="font-semibold text-gray-800 mb-2">
-            Usage Examples:
+            Popular Use Cases:
           </Typography>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Chip value="cURL" size="sm" color="blue" className="text-xs" />
-              <Typography variant="small" className="font-mono text-gray-600">
-                curl -X POST {currentUrl || 'your-webhook-url'} -d '&#123;"test": "data"&#125;'
+              <Chip value="GitHub" size="sm" color="blue" className="text-xs" />
+              <Typography variant="small" color="gray">
+                Repository events, pull requests, issues
               </Typography>
             </div>
             <div className="flex items-center gap-2">
-              <Chip value="GitHub" size="sm" color="green" className="text-xs" />
+              <Chip value="Stripe" size="sm" color="green" className="text-xs" />
               <Typography variant="small" color="gray">
-                Use in GitHub repository webhook settings
+                Payment confirmations, subscription updates
               </Typography>
             </div>
             <div className="flex items-center gap-2">
-              <Chip value="Stripe" size="sm" color="purple" className="text-xs" />
+              <Chip value="Discord" size="sm" color="purple" className="text-xs" />
               <Typography variant="small" color="gray">
-                Add to Stripe webhook endpoints
+                Bot interactions, server events
               </Typography>
             </div>
           </div>
@@ -209,14 +153,15 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
       </DialogBody>
       
       <DialogFooter className="flex items-center gap-2">
-        <Button variant="outlined" color="gray" onClick={onClose}>
+        <Button variant="outlined" color="gray" onClick={handleClose} disabled={loading}>
           Cancel
         </Button>
         <Button
           variant="filled"
           color="blue"
           onClick={handleCreate}
-          disabled={isCustom && !customId.trim()}
+          disabled={!providerName.trim() || loading}
+          loading={loading}
         >
           Create Endpoint
         </Button>

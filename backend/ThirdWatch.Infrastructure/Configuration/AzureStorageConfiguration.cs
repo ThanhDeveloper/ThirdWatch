@@ -6,9 +6,9 @@ public class AzureStorageConfiguration
 
     public required string ConnectionString { get; set; }
 
-    public required string ContainerName { get; set; }
+    public required string WebHookContainerName { get; set; }
 
-    public bool EnableCompression { get; set; } = true;
+    public required string ContainerName { get; set; }
 
     public string DefaultBlobAccessTier { get; set; } = "Hot";
 }

@@ -1,6 +1,6 @@
 using ThirdWatch.Domain.Events.Base;
 
-namespace ThirdWatch.Application.Services;
+namespace ThirdWatch.Application.Services.Interfaces;
 
 /// <summary>
 /// Service for publishing integration events

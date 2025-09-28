@@ -21,6 +21,7 @@ public interface IUserRepository : IRepository<User>
 public interface IWebhookEndpointRepository : IRepository<WebhookEndpoint>
 {
     Task<WebhookEndpoint?> GetByEndpointIdAsync(Guid endpointId, CancellationToken cancellationToken = default);
+    Task DeactivateEndpointsAsync(Guid userId, CancellationToken cancellationToken = default);
 }
 
-public interface IWebhookRequestLogRepository : IRepository<WebhookRequestLog> { }
+public interface IWebhookHistoryRepository : IRepository<WebhookHistory> { }

@@ -1,7 +1,7 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ThirdWatch.Application.Services;
-using ThirdWatch.Domain.Events.WebhookReceived;
+using ThirdWatch.Application.Services.Interfaces;
+using ThirdWatch.Domain.Events.WebhookRequestReceived;
 using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Infrastructure.Consumers.Base;
 
@@ -10,56 +10,66 @@ namespace ThirdWatch.Infrastructure.Consumers;
 /// <summary>
 /// Consumer for webhook received integration events
 /// </summary>
-public sealed class WebhookReceivedConsumer(IUnitOfWork unitOfWork, IBlobStorageService blobStorageService, ILogger<WebhookReceivedConsumer> logger) : BaseConsumer<WebhookReceivedIntegrationEvent>(logger)
+public sealed class WebhookReceivedConsumer(
+    IUnitOfWork unitOfWork,
+    IBlobStorageService blobStorageService,
+    ICompressionService compressionService,
+    ILogger<WebhookReceivedConsumer> logger) : BaseConsumer<WebhookRequestReceivedIntegrationEvent>(logger)
 {
-    protected override async Task ConsumeMessage(ConsumeContext<WebhookReceivedIntegrationEvent> context)
+    protected override async Task ConsumeMessage(ConsumeContext<WebhookRequestReceivedIntegrationEvent> context)
     {
         var message = context.Message;
 
-        logger.LogInformation("Processing webhook received event for endpoint: {EndpointId} with correlationId: {CorrelationId}", message.EndpointId, message.CorrelationId);
+        logger.LogInformation("Processing webhook event for endpoint: {EndpointId}, correlationId: {CorrelationId}",
+            message.EndpointId, message.CorrelationId);
 
-        var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(message.EndpointId);
-
-        if (existingEndpoint is null)
+        var endpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(message.EndpointId);
+        if (endpoint is null)
         {
-            logger.LogError("Webhook endpoint with ID {EndpointId} not found", message.EndpointId);
+            logger.LogError("Webhook endpoint {EndpointId} not found", message.EndpointId);
             return;
         }
 
-        Uri? payloadBlobUrl = null;
+        if (string.IsNullOrWhiteSpace(message.Payload))
+        {
+            logger.LogWarning("Empty payload for webhook endpoint {EndpointId}", message.EndpointId);
+            return;
+        }
 
-        //to do validate this code is working as expected
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            // Upload payload to blob storage
-            if (!string.IsNullOrWhiteSpace(message.Payload))
-            {
-                string fileName = $"endpoint_{message.EndpointId}_{message.CorrelationId}";
-                payloadBlobUrl = await blobStorageService.UploadJsonAsync(message.Payload, fileName);
+            var payloadBlobUrl = await UploadCompressedPayloadAsync(message);
 
-                logger.LogInformation("Successfully uploaded payload to blob storage: {BlobUrl}", payloadBlobUrl);
-            }
+            var requestHistory = new WebhookHistory
+            {
+                WebhookEndpointId = endpoint.Id,
+                Headers = message.Headers,
+                SourceIp = message.SourceIp,
+                ReceivedAt = message.ReceivedAt,
+                PayloadBlobUrl = payloadBlobUrl
+            };
+
+            await unitOfWork.WebhookHistories.AddAsync(requestHistory);
+            await unitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Webhook event processed successfully for endpoint: {EndpointId}", message.EndpointId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to upload payload to blob storage for endpoint: {EndpointId}", message.EndpointId);
+            logger.LogError(ex, "Failed to process webhook event for endpoint: {EndpointId}", message.EndpointId);
+            throw;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+    }
 
-        var requestLog = new WebhookRequestLog
-        {
-            WebhookEndpointId = existingEndpoint.Id,
-            Headers = message.Headers,
-            SourceIp = message.SourceIp,
-            ReceivedAt = message.ReceivedAt,
-            PayloadBlobUrl = payloadBlobUrl
-        };
+    private async Task<Uri> UploadCompressedPayloadAsync(WebhookRequestReceivedIntegrationEvent message)
+    {
+        string fileName = $"endpoint_{message.EndpointId}_correlationId_{message.CorrelationId}.json.gz";
 
-        await unitOfWork.WebhookRequestLogs.AddAsync(requestLog);
+        using var compressedStream = compressionService.CompressToStream(message.Payload);
 
-        await unitOfWork.SaveChangesAsync();
-
-        logger.LogInformation("Completed processing webhook received event for endpoint: {EndpointId} with correlationId: {CorrelationId}", message.EndpointId, message.CorrelationId);
+        return await blobStorageService.UploadAsync(
+            compressedStream,
+            fileName,
+            "application/gzip");
     }
 }

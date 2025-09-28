@@ -5,12 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ThirdWatch.Application.Handlers.Handlers.Auth;
-using ThirdWatch.Application.Services;
-using ThirdWatch.Application.Services.Interfaces;
-using ThirdWatch.Infrastructure.Persistence;
-using ThirdWatch.Infrastructure.Persistence.Repositories;
-using ThirdWatch.Infrastructure.Services;
-using ThirdWatch.Shared.Helpers;
+using ThirdWatch.Infrastructure.Configuration;
 using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.API.Extensions;
@@ -20,6 +15,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(LoginCommandHandler).Assembly));
+
+        services.Configure<ApplicationConfiguration>(configuration.GetSection(ApplicationConfiguration.SectionName));
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 

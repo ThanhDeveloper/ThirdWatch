@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
@@ -16,16 +17,28 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         _context = context;
         Users = new UserRepository(_context);
         WebhookEndpoints = new WebhookEndpointRepository(_context);
-        WebhookRequestLogs = new WebHookRequestLogRepository(_context);
+        WebhookHistories = new WebHookHistoryRepository(_context);
     }
 
     public IUserRepository Users { get; }
     public IWebhookEndpointRepository WebhookEndpoints { get; }
-    public IWebhookRequestLogRepository WebhookRequestLogs { get; }
+    public IWebhookHistoryRepository WebhookHistories { get; }
 
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);
+
+    public async Task ExecuteAsync(Func<Task> operation)
+    {
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(operation);
+    }
+
+    public async Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> operation)
+    {
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(operation);
+    }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {

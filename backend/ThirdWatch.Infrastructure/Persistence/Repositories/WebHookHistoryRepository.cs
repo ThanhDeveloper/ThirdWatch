@@ -3,4 +3,4 @@ using ThirdWatch.Infrastructure.Persistence.Contexts;
 
 namespace ThirdWatch.Infrastructure.Persistence.Repositories;
 
-public class WebHookRequestLogRepository(ApplicationDbContext context) : Repository<WebhookRequestLog>(context), IWebhookRequestLogRepository { }
+public class WebHookHistoryRepository(ApplicationDbContext context) : Repository<WebhookHistory>(context), IWebhookHistoryRepository { }

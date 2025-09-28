@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardBody,
@@ -9,9 +9,143 @@ import {
   TabsBody,
   Tab,
   TabPanel,
+  Spinner,
+  Button,
 } from '@material-tailwind/react';
-import { CheckCircleIcon, ExclamationTriangleIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, ExclamationTriangleIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import CopyButton from '@/components/common/CopyButton';
+
+// Collapsible JSON Viewer Component
+const JsonView = ({ data, title = "Request Body" }) => {
+  const [collapsed, setCollapsed] = useState({});
+
+  if (!data) return null;
+
+  const toggleCollapse = (path) => {
+    setCollapsed(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
+
+  const renderJsonValue = (value, key = '', path = '', level = 0) => {
+    if (value === null) {
+      return <span className="text-gray-500">null</span>;
+    }
+
+    if (typeof value === 'boolean') {
+      return <span className={`${value ? 'text-green-600' : 'text-red-600'} font-medium`}>{String(value)}</span>;
+    }
+
+    if (typeof value === 'number') {
+      return <span className="text-blue-600 font-medium">{value}</span>;
+    }
+
+    if (typeof value === 'string') {
+      return <span className="text-green-700">"{value}"</span>;
+    }
+
+    if (Array.isArray(value)) {
+      const currentPath = path ? `${path}.${key}` : key;
+      const isCollapsed = collapsed[currentPath];
+      
+      return (
+        <div className="ml-4">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => toggleCollapse(currentPath)}
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+            >
+              {isCollapsed ? (
+                <ChevronRightIcon className="h-3 w-3" />
+              ) : (
+                <ChevronDownIcon className="h-3 w-3" />
+              )}
+              <span className="text-purple-600 font-medium">[{value.length}]</span>
+            </button>
+          </div>
+          {!isCollapsed && (
+            <div className="ml-4 border-l border-gray-200 pl-4">
+              {value.map((item, index) => (
+                <div key={index} className="py-1">
+                  <span className="text-gray-500 mr-2">{index}:</span>
+                  {renderJsonValue(item, index, currentPath, level + 1)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      const currentPath = path ? `${path}.${key}` : key;
+      const isCollapsed = collapsed[currentPath];
+      const keys = Object.keys(value);
+
+      return (
+        <div className="ml-4">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => toggleCollapse(currentPath)}
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-800"
+            >
+              {isCollapsed ? (
+                <ChevronRightIcon className="h-3 w-3" />
+              ) : (
+                <ChevronDownIcon className="h-3 w-3" />
+              )}
+              <span className="text-gray-600 font-medium">&#123;{keys.length}&#125;</span>
+            </button>
+          </div>
+          {!isCollapsed && (
+            <div className="ml-4 border-l border-gray-200 pl-4">
+              {keys.map((objKey) => (
+                <div key={objKey} className="py-1">
+                  <span className="text-blue-800 font-medium mr-2">"{objKey}":</span>
+                  {renderJsonValue(value[objKey], objKey, currentPath, level + 1)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return <span>{String(value)}</span>;
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <Typography variant="small" color="gray" className="font-medium">
+          {title}
+        </Typography>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outlined"
+            onClick={() => setCollapsed({})}
+          >
+            Expand All
+          </Button>
+          <CopyButton
+            content={JSON.stringify(data, null, 2)}
+            size="sm"
+            successMessage="JSON copied!"
+          >
+            Copy JSON
+          </CopyButton>
+        </div>
+      </div>
+      <div className="bg-gray-50 rounded-lg p-4 border max-h-96 overflow-auto">
+        <div className="text-sm font-mono">
+          {renderJsonValue(data, '', '', 0)}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const RequestDetails = ({
   selectedRequest,
@@ -19,7 +153,14 @@ const RequestDetails = ({
   onTabChange,
   formatTimestamp,
   getMethodColor,
+  requestPayload,
 }) => {
+  // Helper function to get header value case-insensitive
+  const getHeaderValue = (headers, headerName) => {
+    if (!headers) return null;
+    const key = Object.keys(headers).find(k => k.toLowerCase() === headerName.toLowerCase());
+    return key ? headers[key] : null;
+  };
   if (!selectedRequest) {
     return (
       <Card className="min-h-[600px]">
@@ -68,25 +209,13 @@ const RequestDetails = ({
             {/* Status indicators */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                {selectedRequest.signatureValid ? (
-                  <>
-                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                    <Typography variant="small" className="text-green-700 font-medium">
-                      Valid Signature
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
-                    <Typography variant="small" className="text-orange-700 font-medium">
-                      Invalid Signature
-                    </Typography>
-                  </>
-                )}
+                <Typography variant="small" color="gray">
+                  Headers: {Object.keys(selectedRequest.headers || {}).length}
+                </Typography>
               </div>
               <div className="flex items-center gap-2">
                 <Typography variant="small" color="gray">
-                  Headers: {Object.keys(selectedRequest.headers).length}
+                  Size: {selectedRequest.headers?.['content-length'] || 'Unknown'}
                 </Typography>
               </div>
             </div>
@@ -124,7 +253,16 @@ const RequestDetails = ({
                             Content Type
                           </Typography>
                           <Typography className="font-mono text-sm">
-                            {selectedRequest.headers['content-type'] || 'Not specified'}
+                            {getHeaderValue(selectedRequest.headers, 'content-type') || 'Not specified'}
+                          </Typography>
+                        </div>
+
+                        <div>
+                          <Typography variant="small" color="gray" className="mb-2 font-medium">
+                            Content Length
+                          </Typography>
+                          <Typography className="font-mono text-sm">
+                            {getHeaderValue(selectedRequest.headers, 'content-length') || 'Not specified'}
                           </Typography>
                         </div>
                       </div>
@@ -135,9 +273,55 @@ const RequestDetails = ({
                             User Agent
                           </Typography>
                           <Typography className="font-mono text-sm break-all">
-                            {selectedRequest.headers['user-agent'] || 'Not specified'}
+                            {getHeaderValue(selectedRequest.headers, 'user-agent') || 'Not specified'}
                           </Typography>
                         </div>
+
+                        <div>
+                          <Typography variant="small" color="gray" className="mb-2 font-medium">
+                            Host
+                          </Typography>
+                          <Typography className="font-mono text-sm">
+                            {getHeaderValue(selectedRequest.headers, 'host') || 'Not specified'}
+                          </Typography>
+                        </div>
+
+                        {/* Show important webhook headers if available */}
+                        {(getHeaderValue(selectedRequest.headers, 'x-github-event') || 
+                          getHeaderValue(selectedRequest.headers, 'x-slack-signature') || 
+                          getHeaderValue(selectedRequest.headers, 'stripe-signature')) && (
+                          <div>
+                            <Typography variant="small" color="gray" className="mb-2 font-medium">
+                              Webhook Headers
+                            </Typography>
+                            <div className="space-y-1">
+                              {getHeaderValue(selectedRequest.headers, 'x-github-event') && (
+                                <div className="flex items-center gap-2">
+                                  <Chip value="GitHub" size="sm" color="blue" />
+                                  <Typography variant="small" className="font-mono">
+                                    {getHeaderValue(selectedRequest.headers, 'x-github-event')}
+                                  </Typography>
+                                </div>
+                              )}
+                              {getHeaderValue(selectedRequest.headers, 'x-slack-signature') && (
+                                <div className="flex items-center gap-2">
+                                  <Chip value="Slack" size="sm" color="purple" />
+                                  <Typography variant="small" className="font-mono">
+                                    Verified
+                                  </Typography>
+                                </div>
+                              )}
+                              {getHeaderValue(selectedRequest.headers, 'stripe-signature') && (
+                                <div className="flex items-center gap-2">
+                                  <Chip value="Stripe" size="sm" color="green" />
+                                  <Typography variant="small" className="font-mono">
+                                    Verified
+                                  </Typography>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -146,7 +330,7 @@ const RequestDetails = ({
                 {/* Headers Tab */}
                 <TabPanel value="headers" className="p-0">
                   <div className="space-y-1 max-h-96 overflow-y-auto">
-                    {Object.entries(selectedRequest.headers).map(([key, value]) => (
+                    {Object.entries(selectedRequest.headers || {}).map(([key, value]) => (
                       <div key={key} className="p-3 border border-gray-100 rounded-lg hover:bg-gray-50">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                           <div className="sm:w-1/3">
@@ -175,26 +359,10 @@ const RequestDetails = ({
 
                 {/* Body Tab */}
                 <TabPanel value="body" className="p-0">
-                  {selectedRequest.body ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <Typography variant="small" color="gray" className="font-medium">
-                          Request Body (JSON)
-                        </Typography>
-                        <CopyButton
-                          content={JSON.stringify(selectedRequest.body, null, 2)}
-                          size="sm"
-                          successMessage="Request body copied!"
-                        >
-                          Copy JSON
-                        </CopyButton>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-4 border max-h-96 overflow-auto">
-                        <pre className="text-sm font-mono text-gray-800 whitespace-pre-wrap">
-                          {JSON.stringify(selectedRequest.body, null, 2)}
-                        </pre>
-                      </div>
-                    </div>
+                  {requestPayload ? (
+                    <JsonView data={requestPayload} title="Request Payload" />
+                  ) : selectedRequest?.body ? (
+                    <JsonView data={selectedRequest.body} title="Request Body" />
                   ) : (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
