@@ -23,10 +23,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <ProjectReference Include="..\ThirdWatch.Domain\ThirdWatch.Domain.csproj" />
   </ItemGroup>
 </Project>

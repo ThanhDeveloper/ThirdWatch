@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ThirdWatch.Application.DTOs.WebHooks;
+using ThirdWatch.Shared.Helpers;
 
 namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
 
@@ -18,7 +19,8 @@ public sealed class GetWebHookHistoryQueryHandler(
 
         return new WebHookHistoryDto(
             requestHistory.Id,
-            payload
+            payload,
+            SizeHelper.CalculateContentSize(payload)
         );
     }
 

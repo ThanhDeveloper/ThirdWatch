@@ -251,11 +251,8 @@ export function WebhookInspector() {
 
   const getMethodColor = (method) => {
     const colors = {
-      GET: 'blue',
-      POST: 'green',
-      PUT: 'orange',
-      DELETE: 'red',
-      PATCH: 'purple',
+      Get: 'blue',
+      Post: 'green'
     };
     return colors[method] || 'gray';
   };

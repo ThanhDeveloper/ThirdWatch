@@ -54,10 +54,10 @@ class WebhookService {
   }
 
   /**
-   * Get request payload data only
+   * Get request payload data with metadata
    * @param {string} endpointId - Endpoint ID
    * @param {string} historyId - History ID
-   * @returns {Promise<Object>} Request payload data only
+   * @returns {Promise<Object>} Request payload data with size and other metadata
    */
   async getRequestPayload(endpointId, historyId) {
     try {
@@ -66,20 +66,25 @@ class WebhookService {
         { withCredentials: true }
       );
       
+      const data = response?.data?.data;
+      if (!data) return {};
+      
       // Parse JSON string payload to object
-      // API response: { data: { id: string, payload: string }, success: true, ... }
-      let payload = response?.data?.data?.payload;
+      let payload = data.payload;
       if (typeof payload === 'string') {
         try {
           payload = JSON.parse(payload);
         } catch (parseError) {
           console.error('Failed to parse payload JSON:', parseError);
-          // Return as string if parsing fails
-          return payload;
+          payload = data.payload;
         }
       }
       
-      return payload || {};
+      return {
+        id: data.id,
+        payload: payload,
+        size: data.size
+      };
     } catch (error) {
       throw error;
     }

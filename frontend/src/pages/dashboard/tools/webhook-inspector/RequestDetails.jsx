@@ -197,7 +197,7 @@ const RequestDetails = ({
                 />
                 <div>
                   <Typography variant="h6" color="blue-gray" className="font-mono">
-                    {selectedRequest.url}
+                    EndpointId: {selectedRequest.endpointId}
                   </Typography>
                   <Typography variant="small" color="gray">
                     {formatTimestamp(selectedRequest.timestamp)}
@@ -215,7 +215,7 @@ const RequestDetails = ({
               </div>
               <div className="flex items-center gap-2">
                 <Typography variant="small" color="gray">
-                  Size: {selectedRequest.headers?.['content-length'] || 'Unknown'}
+                  Size: {requestPayload?.size || 'Unknown'}
                 </Typography>
               </div>
             </div>
@@ -285,43 +285,6 @@ const RequestDetails = ({
                             {getHeaderValue(selectedRequest.headers, 'host') || 'Not specified'}
                           </Typography>
                         </div>
-
-                        {/* Show important webhook headers if available */}
-                        {(getHeaderValue(selectedRequest.headers, 'x-github-event') || 
-                          getHeaderValue(selectedRequest.headers, 'x-slack-signature') || 
-                          getHeaderValue(selectedRequest.headers, 'stripe-signature')) && (
-                          <div>
-                            <Typography variant="small" color="gray" className="mb-2 font-medium">
-                              Webhook Headers
-                            </Typography>
-                            <div className="space-y-1">
-                              {getHeaderValue(selectedRequest.headers, 'x-github-event') && (
-                                <div className="flex items-center gap-2">
-                                  <Chip value="GitHub" size="sm" color="blue" />
-                                  <Typography variant="small" className="font-mono">
-                                    {getHeaderValue(selectedRequest.headers, 'x-github-event')}
-                                  </Typography>
-                                </div>
-                              )}
-                              {getHeaderValue(selectedRequest.headers, 'x-slack-signature') && (
-                                <div className="flex items-center gap-2">
-                                  <Chip value="Slack" size="sm" color="purple" />
-                                  <Typography variant="small" className="font-mono">
-                                    Verified
-                                  </Typography>
-                                </div>
-                              )}
-                              {getHeaderValue(selectedRequest.headers, 'stripe-signature') && (
-                                <div className="flex items-center gap-2">
-                                  <Chip value="Stripe" size="sm" color="green" />
-                                  <Typography variant="small" className="font-mono">
-                                    Verified
-                                  </Typography>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 using ThirdWatch.Domain.Events.Base;
 
-namespace ThirdWatch.Domain.Events.WebhookRequestReceived;
+namespace ThirdWatch.Domain.Events.WebhookReceived;
 
 /// <summary>
 /// Integration event published when a webhook is received and logged

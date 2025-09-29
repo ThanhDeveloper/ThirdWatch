@@ -37,6 +37,6 @@ public class CreateWebHookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration
             }
         });
 
-        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/{newEndpoint.EndpointId}");
+        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{newEndpoint.EndpointId}");
     }
 }

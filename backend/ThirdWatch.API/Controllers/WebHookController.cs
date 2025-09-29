@@ -29,7 +29,7 @@ public class WebHookController(IMediator mediator) : ControllerBase
 
 
     [AllowAnonymous]
-    [HttpPost]
+    [HttpPost("endpointId/{endpointId}")]
     [EnableRateLimiting("WebhookRateLimit")]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.TooManyRequests)]

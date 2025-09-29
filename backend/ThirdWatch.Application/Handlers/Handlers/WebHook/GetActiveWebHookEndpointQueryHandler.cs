@@ -16,6 +16,6 @@ public class GetActiveWebHookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfi
         {
             return null;
         }
-        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/{activeEndpoint}");
+        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{activeEndpoint}");
     }
 }

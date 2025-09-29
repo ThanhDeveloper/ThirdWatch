@@ -1,5 +1,5 @@
 using ThirdWatch.Application.Handlers.Commands.WebHooks;
-using ThirdWatch.Domain.Events.WebhookRequestReceived;
+using ThirdWatch.Domain.Events.WebhookReceived;
 
 namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
 

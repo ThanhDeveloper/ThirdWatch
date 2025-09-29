@@ -11,6 +11,7 @@ public class GetWebHookRequestHistoriesQueryHandler(IUnitOfWork unitOfWork) : IR
             .AsNoTracking()
             .Include(x => x.WebhookEndpoint)
             .Where(x => x.WebhookEndpoint.UserId == request.UserId)
+            .OrderByDescending(x => x.ReceivedAt)
             .Select(x => new WebHookHistoriesDto(
                 x.Id,
                 x.WebhookEndpointId,
