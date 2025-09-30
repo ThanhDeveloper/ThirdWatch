@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 
-public class GetActiveWebHookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration) : IRequestHandler<GetActiveWebHookEndpointQuery, Uri?>
+public class GetActiveWebhookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration) : IRequestHandler<GetActiveWebhookEndpointQuery, Uri?>
 {
-    public async Task<Uri?> Handle(GetActiveWebHookEndpointQuery request, CancellationToken cancellationToken)
+    public async Task<Uri?> Handle(GetActiveWebhookEndpointQuery request, CancellationToken cancellationToken)
     {
         var activeEndpoint = await unitOfWork.WebhookEndpoints.Query()
             .Where(x => x.UserId == request.UserId && x.IsActive)

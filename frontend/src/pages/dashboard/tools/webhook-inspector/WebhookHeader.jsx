@@ -54,16 +54,7 @@ const WebhookHeader = ({
           <PlusIcon className="h-4 w-4" />
           New Endpoint
         </Button>
-        
-        <CopyButton
-          content={currentUrl}
-          successMessage="Endpoint URL copied!"
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          Copy URL
-        </CopyButton>
-
+      
         <Button
           variant={isLive ? "filled" : "outlined"}
           color={isLive ? "green" : "gray"}

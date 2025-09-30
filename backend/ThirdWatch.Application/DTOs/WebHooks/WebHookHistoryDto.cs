@@ -1,3 +1,3 @@
-namespace ThirdWatch.Application.DTOs.WebHooks;
+namespace ThirdWatch.Application.DTOs.Webhooks;
 
-public record WebHookHistoryDto(Guid Id, string Payload, string Size);
+public record WebhookHistoryDto(Guid Id, string Payload, string Size);

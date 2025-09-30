@@ -4,4 +4,4 @@ namespace ThirdWatch.Application.Handlers.Queries;
 
 public record GetCurrentUserQuery(Guid UserId) : IRequest<UserResponseDto>;
 
-public record GetActiveWebHookEndpointQuery(Guid UserId) : IRequest<Uri?>;
+public record GetActiveWebhookEndpointQuery(Guid UserId) : IRequest<Uri?>;

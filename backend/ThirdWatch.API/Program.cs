@@ -16,6 +16,7 @@ builder.Services.AddSwaggerServices();
 
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
+
 builder.Services.AddEndpointsApiExplorer();
 
 // to detect the original IP address of the client when behind a proxy

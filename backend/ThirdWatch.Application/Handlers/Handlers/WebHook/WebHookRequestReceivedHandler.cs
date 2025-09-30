@@ -1,11 +1,11 @@
-using ThirdWatch.Application.Handlers.Commands.WebHooks;
+using ThirdWatch.Application.Handlers.Commands.Webhooks;
 using ThirdWatch.Domain.Events.WebhookReceived;
 
-namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 
-public class WebHookRequestReceivedHandler(IUnitOfWork unitOfWork, IEventPublisher eventPublisher) : IRequestHandler<WebHookRequestReceivedCommand>
+public class WebhookRequestReceivedHandler(IUnitOfWork unitOfWork, IEventPublisher eventPublisher) : IRequestHandler<WebhookRequestReceivedCommand>
 {
-    public async Task Handle(WebHookRequestReceivedCommand request, CancellationToken cancellationToken)
+    public async Task Handle(WebhookRequestReceivedCommand request, CancellationToken cancellationToken)
     {
         var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(request.EndpointId, cancellationToken)
             ?? throw new NotFoundException($"Webhook endpoint with ID {request.EndpointId} not found");

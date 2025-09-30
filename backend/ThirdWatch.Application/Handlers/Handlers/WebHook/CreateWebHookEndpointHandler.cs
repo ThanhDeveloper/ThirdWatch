@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using ThirdWatch.Application.Handlers.Commands.WebHooks;
+using ThirdWatch.Application.Handlers.Commands.Webhooks;
 
-namespace ThirdWatch.Application.Handlers.Handlers.WebHook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 
-public class CreateWebHookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<CreateWebHookEndpointHandler> logger) : IRequestHandler<CreateWebHookEndpointCommand, Uri>
+public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<CreateWebhookEndpointHandler> logger) : IRequestHandler<CreateWebhookEndpointCommand, Uri>
 {
-    public async Task<Uri> Handle(CreateWebHookEndpointCommand request, CancellationToken cancellationToken)
+    public async Task<Uri> Handle(CreateWebhookEndpointCommand request, CancellationToken cancellationToken)
     {
         var newEndpoint = new WebhookEndpoint
         {

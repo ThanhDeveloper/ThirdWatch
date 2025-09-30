@@ -1,3 +1,3 @@
-namespace ThirdWatch.Application.Handlers.Commands.WebHooks;
+namespace ThirdWatch.Application.Handlers.Commands.Webhooks;
 
-public record WebHookRequestReceivedCommand(string? SourceIp, Guid EndpointId, string Payload, string Headers) : IRequest;
+public record WebhookRequestReceivedCommand(string? SourceIp, Guid EndpointId, string Payload, string Headers) : IRequest;

@@ -322,8 +322,8 @@ const RequestDetails = ({
 
                 {/* Body Tab */}
                 <TabPanel value="body" className="p-0">
-                  {requestPayload ? (
-                    <JsonView data={requestPayload} title="Request Payload" />
+                  {requestPayload?.payload ? (
+                    <JsonView data={requestPayload.payload} title="Request Body" />
                   ) : selectedRequest?.body ? (
                     <JsonView data={selectedRequest.body} title="Request Body" />
                   ) : (
@@ -333,7 +333,7 @@ const RequestDetails = ({
                       </div>
                       <Typography color="gray" className="mb-2">No request body</Typography>
                       <Typography color="gray" className="text-sm">
-                        This {selectedRequest.method} request doesn't contain a body
+                        This {selectedRequest?.method} request doesn't contain a body
                       </Typography>
                     </div>
                   )}

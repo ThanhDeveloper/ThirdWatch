@@ -1,3 +1,3 @@
-namespace ThirdWatch.Application.DTOs.WebHooks;
+namespace ThirdWatch.Application.DTOs.Webhooks;
 
-public record WebHookReceiveDto(Guid HookLogId, Guid HookLogDetailId, Guid EndpointId, string Payload, string Headers, DateTimeOffset CreatedAt);
+public record WebhookReceiveDto(Guid HookLogId, Guid HookLogDetailId, Guid EndpointId, string Payload, string Headers, DateTimeOffset CreatedAt);

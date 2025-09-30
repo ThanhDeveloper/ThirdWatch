@@ -69,13 +69,11 @@ class WebhookService {
       const data = response?.data?.data;
       if (!data) return {};
       
-      // Parse JSON string payload to object
       let payload = data.payload;
       if (typeof payload === 'string') {
         try {
           payload = JSON.parse(payload);
         } catch (parseError) {
-          console.error('Failed to parse payload JSON:', parseError);
           payload = data.payload;
         }
       }

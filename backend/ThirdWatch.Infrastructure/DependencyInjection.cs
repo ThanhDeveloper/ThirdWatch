@@ -32,6 +32,17 @@ public static class DependencyInjection
 
         services.AddAzureStorageServices(configuration);
 
+        services.AddCacheServices(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddCacheServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddStackExchangeRedisCache(options => options.Configuration = configuration.GetConnectionString("Redis"));
+
+        services.AddScoped<ICacheService, RedisCacheService>();
+
         return services;
     }
 

@@ -1,12 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace ThirdWatch.Domain.Entities;
 
-public class WebhookHistory
+public class WebhookHistory : BaseEntity
 {
-    [Key]
-    public Guid Id { get; set; }
-
     public required Uri PayloadBlobUrl { get; set; }
 
     public required string Headers { get; set; }
