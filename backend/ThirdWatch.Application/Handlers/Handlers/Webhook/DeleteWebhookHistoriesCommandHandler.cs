@@ -6,6 +6,6 @@ public class DeleteWebhookHistoriesCommandHandler(IUnitOfWork unitOfWork) : IReq
 {
     public async Task Handle(DeleteWebhookHistoriesCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork.ExecuteAsync(async () => await unitOfWork.WebhookHistories.CleanUpEndpointsByUserIdAsync(request.UserId, cancellationToken));
+        await unitOfWork.ExecuteAsync(async () => await unitOfWork.WebhookHistories.DeleteWebhookHistoriesByUserIdAsync(request.UserId, cancellationToken));
     }
 }

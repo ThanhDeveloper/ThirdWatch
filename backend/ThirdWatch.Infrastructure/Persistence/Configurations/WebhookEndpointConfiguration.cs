@@ -1,18 +1,14 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 
-public class WebhookEndpointConfiguration : IEntityTypeConfiguration<WebhookEndpoint>
+public class WebhookEndpointConfiguration : BaseEntityConfiguration<WebhookEndpoint>
 {
-    public void Configure(EntityTypeBuilder<WebhookEndpoint> builder)
+    public override void Configure(EntityTypeBuilder<WebhookEndpoint> builder)
     {
-        builder.HasKey(x => x.Id);
+        base.Configure(builder);
 
         builder.Property(x => x.ProviderName).HasMaxLength(100);
-
-        builder.Property(x => x.HttpMethod).HasEnumToStringConversion();
 
         builder.HasMany(x => x.WebhookHistories)
             .WithOne(x => x.WebhookEndpoint)

@@ -64,7 +64,6 @@ export function WebhookInspector() {
             return {
               id: history.id,
               endpointId: history.endpointId,
-              method: history.httpMethod || 'POST',
               url: url,
               timestamp: new Date(history.receivedAt).getTime(),
               headers: parsedHeaders,
@@ -112,7 +111,6 @@ export function WebhookInspector() {
         return {
           id: history.id,
           endpointId: history.endpointId,
-          method: history.httpMethod || 'POST',
           url: currentUrl || 'Unknown URL',
           timestamp: new Date(history.receivedAt).getTime(),
           headers: parsedHeaders,
@@ -147,7 +145,6 @@ export function WebhookInspector() {
             return {
               id: history.id,
               endpointId: history.endpointId,
-              method: history.httpMethod || 'POST',
               url: currentUrl,
               timestamp: new Date(history.receivedAt).getTime(),
               headers: parsedHeaders,
@@ -181,9 +178,9 @@ export function WebhookInspector() {
     }
   };
 
-  const handleCreateEndpoint = useCallback(async (providerName, httpMethod) => {
+  const handleCreateEndpoint = useCallback(async (providerName) => {
     try {
-      const newEndpoint = await webhookService.createEndpoint(providerName, httpMethod);
+      const newEndpoint = await webhookService.createEndpoint(providerName);
       
       setActiveEndpoint(newEndpoint);
       const url = newEndpoint || '';
@@ -204,9 +201,16 @@ export function WebhookInspector() {
   }, []);
 
   const handleClearLogs = useCallback(async () => {
-    setRequests([]);
-    setSelectedRequest(null);
-    toast.info('All logs cleared');
+    try {
+      await webhookService.clearHistories();
+      setRequests([]);
+      setSelectedRequest(null);
+      setRequestPayloads({});
+      
+      toast.success('All webhook histories cleared successfully');
+    } catch (error) {
+      toast.error('Failed to clear webhook histories');
+    }
   }, []);
 
   const toggleLiveMode = useCallback(() => {
@@ -223,14 +227,6 @@ export function WebhookInspector() {
       minute: '2-digit',
       second: '2-digit',
     });
-  };
-
-  const getMethodColor = (method) => {
-    const colors = {
-      Get: 'blue',
-      Post: 'green'
-    };
-    return colors[method] || 'gray';
   };
   
   const handleShowEndpointCreator = useCallback(() => {
@@ -308,7 +304,6 @@ export function WebhookInspector() {
             selectedRequest={selectedRequest}
             onSelectRequest={handleRequestSelection}
             formatTimestamp={formatTimestamp}
-            getMethodColor={getMethodColor}
           />
         </div>
 
@@ -318,7 +313,6 @@ export function WebhookInspector() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             formatTimestamp={formatTimestamp}
-            getMethodColor={getMethodColor}
             requestPayload={selectedRequest ? requestPayloads[selectedRequest.id] : null}
           />
         </div>

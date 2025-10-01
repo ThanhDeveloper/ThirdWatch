@@ -13,8 +13,7 @@ public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration
             UserId = request.UserId,
             ProviderName = request.ProviderName,
             EndpointId = Guid.NewGuid(),
-            IsActive = true,
-            HttpMethod = request.HttpMethod
+            IsActive = true
         };
 
         await unitOfWork.ExecuteAsync(async () =>

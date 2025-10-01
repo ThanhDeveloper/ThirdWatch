@@ -1,5 +1,3 @@
-using ThirdWatch.Domain.Enums;
-
 namespace ThirdWatch.Domain.Entities;
 
 public class WebhookEndpoint : BaseEntity
@@ -13,8 +11,6 @@ public class WebhookEndpoint : BaseEntity
     public int ResponseStatusCode { get; set; }
 
     public bool IsActive { get; set; }
-
-    public required HttpMethodType HttpMethod { get; set; }
 
     public User User { get; set; } = null!;
 

@@ -10,14 +10,13 @@ public class GetWebhookHistoriesQueryHandler(IUnitOfWork unitOfWork) : IRequestH
             .Query()
             .AsNoTracking()
             .Include(x => x.WebhookEndpoint)
-            .Where(x => x.WebhookEndpoint.UserId == request.UserId && !x.WebhookEndpoint.IsDeleted)
+            .Where(x => x.WebhookEndpoint.UserId == request.UserId)
             .OrderByDescending(x => x.ReceivedAt)
             .Select(x => new WebhookHistoriesDto(
                 x.Id,
                 x.WebhookEndpoint.ProviderName,
                 x.WebhookEndpointId,
                 x.Headers,
-                x.WebhookEndpoint.HttpMethod,
                 x.ReceivedAt
             )).ToListAsync(cancellationToken);
 }

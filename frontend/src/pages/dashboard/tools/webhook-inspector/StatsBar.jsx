@@ -9,13 +9,17 @@ const StatsBar = ({ requests }) => {
     return (now - requestTime) < 300000; // Last 5 minutes
   }).length;
 
-  const methodCounts = requests.reduce((acc, request) => {
-    acc[request.method] = (acc[request.method] || 0) + 1;
+  // Count requests by provider instead of HTTP method
+  const providerCounts = requests.reduce((acc, request) => {
+    const provider = request.providerName || 'Unknown';
+    acc[provider] = (acc[provider] || 0) + 1;
     return acc;
   }, {});
 
-  const mostCommonMethod = Object.entries(methodCounts).reduce((a, b) => 
-    methodCounts[a[0]] > methodCounts[b[0]] ? a : b, ['N/A', 0])[0];
+  const mostCommonProvider = Object.keys(providerCounts).length > 0 
+    ? Object.entries(providerCounts).reduce((a, b) => 
+        providerCounts[a[0]] > providerCounts[b[0]] ? a : b, ['N/A', 0])[0]
+    : 'N/A';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -49,8 +53,8 @@ const StatsBar = ({ requests }) => {
             <ServerIcon className="h-5 w-5 text-purple-600" />
           </div>
           <div>
-            <Typography variant="small" color="gray">Primary Method</Typography>
-            <Typography variant="h6" color="blue-gray">{mostCommonMethod}</Typography>
+            <Typography variant="small" color="gray">Top Provider</Typography>
+            <Typography variant="h6" color="blue-gray">{mostCommonProvider}</Typography>
           </div>
         </div>
       </Card>

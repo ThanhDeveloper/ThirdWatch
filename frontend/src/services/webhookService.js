@@ -24,14 +24,12 @@ class WebhookService {
   /**
    * Create a new webhook endpoint
    * @param {string} providerName - Provider name (e.g., GitHub, Stripe)
-   * @param {string} httpMethod - HTTP method (GET or POST)
    * @returns {Promise<Object>} Created endpoint data
    */
-  async createEndpoint(providerName, httpMethod) {
+  async createEndpoint(providerName) {
     try {
       const response = await apiClient.post('/hooks/create', {
-        providerName: providerName.trim(),
-        httpMethod: httpMethod.toUpperCase(),
+        providerName: providerName.trim()
       }, { withCredentials: true });
       
       return response?.data?.data || {};
@@ -83,6 +81,19 @@ class WebhookService {
         payload: payload,
         size: data.size
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Clear all webhook request histories
+   * @returns {Promise<Object>} Success response
+   */
+  async clearHistories() {
+    try {
+      const response = await apiClient.delete('/hooks/histories', { withCredentials: true });
+      return response?.data || {};
     } catch (error) {
       throw error;
     }

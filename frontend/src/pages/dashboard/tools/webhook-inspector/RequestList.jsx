@@ -7,7 +7,6 @@ const RequestList = ({
   selectedRequest,
   onSelectRequest,
   formatTimestamp,
-  getMethodColor,
 }) => {
   return (
     <Card className="h-fit max-h-[600px]">
@@ -53,8 +52,8 @@ const RequestList = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <Chip
-                      value={request.method}
-                      color={getMethodColor(request.method)}
+                      value='Post'
+                      color={'green'}
                       size="sm"
                       className="text-xs font-bold min-w-[60px] text-center"
                     />

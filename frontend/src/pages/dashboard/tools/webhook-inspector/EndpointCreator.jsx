@@ -18,7 +18,6 @@ import CopyButton from '@/components/common/CopyButton';
 
 const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
   const [providerName, setProviderName] = useState('');
-  const [httpMethod, setHttpMethod] = useState('POST');
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
@@ -28,11 +27,10 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
 
     setLoading(true);
     try {
-      await onCreateEndpoint(providerName.trim(), httpMethod);
+      await onCreateEndpoint(providerName.trim());
       onClose();
       // Reset state
       setProviderName('');
-      setHttpMethod('POST');
     } finally {
       setLoading(false);
     }
@@ -41,7 +39,6 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
   const handleClose = () => {
     // Reset state when closing
     setProviderName('');
-    setHttpMethod('POST');
     setLoading(false);
     onClose();
   };
@@ -75,27 +72,6 @@ const EndpointCreator = ({ open, onClose, onCreateEndpoint }) => {
           />
           <Typography variant="small" color="gray" className="mt-1">
             Enter the name of the service that will send webhooks to this endpoint
-          </Typography>
-        </div>
-
-        {/* HTTP Method Selection */}
-        <div>
-          <Typography variant="small" color="gray" className="mb-2 font-medium">
-            HTTP Method *
-          </Typography>
-          <Select 
-            value={httpMethod} 
-            onChange={(value) => setHttpMethod(value)}
-            className="!border-t-blue-gray-200 focus:!border-t-gray-900"
-            labelProps={{
-              className: "before:content-none after:content-none",
-            }}
-          >
-            <Option value="POST">POST</Option>
-            <Option value="GET">GET</Option>
-          </Select>
-          <Typography variant="small" color="gray" className="mt-1">
-            Choose the HTTP method for your webhook endpoint
           </Typography>
         </div>
 

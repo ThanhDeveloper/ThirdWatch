@@ -1,13 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 
-public class WebhookHistoryConfiguration : IEntityTypeConfiguration<WebhookHistory>
+public class WebhookHistoryConfiguration : BaseEntityConfiguration<WebhookHistory>
 {
-    public void Configure(EntityTypeBuilder<WebhookHistory> builder)
+    public override void Configure(EntityTypeBuilder<WebhookHistory> builder)
     {
-        builder.HasKey(x => x.Id);
+        base.Configure(builder);
 
         builder.Property(x => x.SourceIp).HasMaxLength(50);
 
@@ -16,5 +15,7 @@ public class WebhookHistoryConfiguration : IEntityTypeConfiguration<WebhookHisto
         builder.HasOne(p => p.WebhookEndpoint)
             .WithMany(o => o.WebhookHistories)
             .HasForeignKey(p => p.WebhookEndpointId);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

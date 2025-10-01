@@ -5,12 +5,10 @@ using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.Infrastructure.Persistence.Configurations;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public class UserConfiguration : BaseEntityConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<User> builder)
+    public override void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(x => x.Id);
-
         builder.Property(x => x.Username)
             .IsRequired()
             .HasMaxLength(50);
@@ -54,7 +52,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasMany(p => p.WebhookEndpoints)
             .WithOne(p => p.User)
             .HasForeignKey(p => p.UserId);
-
-        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

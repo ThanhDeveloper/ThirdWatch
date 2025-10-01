@@ -1,5 +1,3 @@
-using ThirdWatch.Domain.Enums;
-
 namespace ThirdWatch.Application.DTOs.Webhooks;
 
-public record WebhookHistoriesDto(Guid Id, string ProviderName, Guid EndpointId, string Headers, HttpMethodType HttpMethod, DateTimeOffset ReceivedAt);
+public record WebhookHistoriesDto(Guid Id, string ProviderName, Guid EndpointId, string Headers, DateTimeOffset ReceivedAt);

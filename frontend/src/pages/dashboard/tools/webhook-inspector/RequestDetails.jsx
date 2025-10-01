@@ -152,7 +152,6 @@ const RequestDetails = ({
   activeTab,
   onTabChange,
   formatTimestamp,
-  getMethodColor,
   requestPayload,
 }) => {
   // Helper function to get header value case-insensitive
@@ -190,8 +189,8 @@ const RequestDetails = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Chip
-                  value={selectedRequest.method}
-                  color={getMethodColor(selectedRequest.method)}
+                  value='Post'
+                  color={'green'}
                   size="lg"
                   className="font-bold"
                 />
@@ -241,8 +240,8 @@ const RequestDetails = ({
                             Request Method
                           </Typography>
                           <Chip
-                            value={selectedRequest.method}
-                            color={getMethodColor(selectedRequest.method)}
+                            value='Post'
+                            color={'green'}
                             size="sm"
                             className="font-semibold"
                           />

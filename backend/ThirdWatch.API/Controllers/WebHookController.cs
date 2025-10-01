@@ -20,7 +20,7 @@ public class WebHookController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<Uri>), (int)HttpStatusCode.Created)]
     public async Task<IActionResult> Create([FromBody] CreateWebHookEndpointRequest request)
     {
-        var command = new CreateWebhookEndpointCommand(request.ProviderName, request.HttpMethod, User.GetUserId());
+        var command = new CreateWebhookEndpointCommand(request.ProviderName, User.GetUserId());
 
         var result = await mediator.Send(command);
 
@@ -53,7 +53,7 @@ public class WebHookController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<WebhookHistoriesDto>>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetHistories()
     {
-        var query = new GetWebhookHistoriesQuery(User.GetUserId());
+        var query = new GetWebhookHistoriesQuery(Guid.Parse("467ABF17-13D6-495A-BBF4-7DB0C9422C77"));
         var result = await mediator.Send(query);
         return Ok(ApiResponse<IReadOnlyList<WebhookHistoriesDto>>.SuccessResult(result));
     }
@@ -77,11 +77,11 @@ public class WebHookController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("histories")]
-    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> DeleteHistories()
     {
         var command = new DeleteWebhookHistoriesCommand(User.GetUserId());
         await mediator.Send(command);
-        return NoContent();
+        return Ok(ApiResponse.SuccessResult("Deleted"));
     }
 }
