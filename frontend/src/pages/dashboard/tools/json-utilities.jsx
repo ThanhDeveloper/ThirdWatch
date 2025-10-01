@@ -5,12 +5,12 @@ import {
     Typography,
 } from '@material-tailwind/react';
 import * as Tabs from '@radix-ui/react-tabs';
-import JsonFormatterPanel from '@/widgets/tools/json-utilities/JsonFormatterPanel';
-import JsonConverterPanel from '@/widgets/tools/json-utilities/JsonConverterPanel';
-import JsonToCsvPanel from '@/widgets/tools/json-utilities/JsonToCsvPanel';
-import JsonDiffPanel from '@/widgets/tools/json-utilities/JsonDiffPanel';
-import JsonValidatorPanel from '@/widgets/tools/json-utilities/JsonValidatorPanel';
-import JwtDecoderPanel from '@/widgets/tools/json-utilities/JwtDecoderPanel';
+import JsonFormatterPanel from '@/pages/dashboard/tools/json-utilities/JsonFormatterPanel';
+import JsonConverterPanel from '@/pages/dashboard/tools/json-utilities/JsonConverterPanel';
+import JsonToCsvPanel from '@/pages/dashboard/tools/json-utilities/JsonToCsvPanel';
+import JsonDiffPanel from '@/pages/dashboard/tools/json-utilities/JsonDiffPanel';
+import JsonValidatorPanel from '@/pages/dashboard/tools/json-utilities/JsonValidatorPanel';
+import JwtDecoderPanel from '@/pages/dashboard/tools/json-utilities/JwtDecoderPanel';
 
 export function JsonUtilities() {
     return (

@@ -32,9 +32,9 @@ import {
   AdjustmentsHorizontalIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/solid';
-import GuidGenerator from '@/widgets/tools/data-generator/GuidGenerator';
-import RandomStringGenerator from '@/widgets/tools/data-generator/RandomStringGenerator';
-import FileGenerator from '@/widgets/tools/data-generator/FileGenerator';
+import GuidGenerator from '@/pages/dashboard/tools/data-generator/GuidGenerator';
+import RandomStringGenerator from '@/pages/dashboard/tools/data-generator/RandomStringGenerator';
+import FileGenerator from '@/pages/dashboard/tools/data-generator/FileGenerator';
 
 export function DataGenerator() {
   // GUID Generator States
