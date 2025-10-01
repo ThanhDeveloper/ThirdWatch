@@ -4,6 +4,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ThirdWatch.API.Workers;
 using ThirdWatch.Application.Handlers.Handlers.Auth;
 using ThirdWatch.Infrastructure.Configuration;
 using ThirdWatch.Shared.Options;
@@ -63,6 +64,12 @@ public static class ServiceCollectionExtensions
 
         services.AddAuthorization();
 
+        return services;
+    }
+
+    public static IServiceCollection AddHostedServices(this IServiceCollection services)
+    {
+        services.AddHostedService<CleanUpDeletedWebhookHistoryFilesJob>();
         return services;
     }
 

@@ -13,6 +13,7 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddRateLimiterServices();
 builder.Services.AddSwaggerServices();
+builder.Services.AddHostedServices();
 
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
                 .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
