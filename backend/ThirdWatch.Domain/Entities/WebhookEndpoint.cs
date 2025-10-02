@@ -8,9 +8,9 @@ public class WebhookEndpoint : BaseEntity
 
     public required Guid UserId { get; set; }
 
-    public int ResponseStatusCode { get; set; }
-
     public bool IsActive { get; set; }
+
+    public DateTimeOffset ExpirationTime { get; set; }
 
     public User User { get; set; } = null!;
 

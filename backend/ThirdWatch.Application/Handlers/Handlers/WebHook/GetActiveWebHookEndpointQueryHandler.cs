@@ -1,21 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ThirdWatch.Application.DTOs.Webhooks;
 
 namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 
-public class GetActiveWebhookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration) : IRequestHandler<GetActiveWebhookEndpointQuery, Uri?>
+public class GetActiveWebhookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration) : IRequestHandler<GetActiveWebhookEndpointQuery, WebhookEndpointDto?>
 {
-    public async Task<Uri?> Handle(GetActiveWebhookEndpointQuery request, CancellationToken cancellationToken)
+    public async Task<WebhookEndpointDto?> Handle(GetActiveWebhookEndpointQuery request, CancellationToken cancellationToken)
     {
         var activeEndpoint = await unitOfWork.WebhookEndpoints.Query()
             .Where(x => x.UserId == request.UserId && x.IsActive)
-            .Select(x => x.EndpointId)
+            .Select(x => new
+            {
+                x.EndpointId,
+                x.ExpirationTime
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (activeEndpoint == Guid.Empty)
-        {
-            return null;
-        }
-        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{activeEndpoint}");
+        return activeEndpoint is null
+            ? null
+            : new WebhookEndpointDto(
+                new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{activeEndpoint.EndpointId}"),
+                activeEndpoint.ExpirationTime
+            );
     }
 }

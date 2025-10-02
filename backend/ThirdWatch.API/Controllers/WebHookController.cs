@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using ThirdWatch.API.Models.Requests.WebHook;
+using ThirdWatch.API.Validators;
 using ThirdWatch.Application.DTOs.Webhooks;
 using ThirdWatch.Application.Handlers.Commands.Webhooks;
 using ThirdWatch.Shared.Extensions;
@@ -14,17 +15,17 @@ namespace ThirdWatch.API.Controllers;
 [ApiController]
 [Route("api/hooks")]
 [Produces(MediaTypeNames.Application.Json)]
-public class WebHookController(IMediator mediator) : ControllerBase
+public class WebHookController(IMediator mediator, ILogger<WebHookController> logger) : ControllerBase
 {
     [HttpPost("create")]
-    [ProducesResponseType(typeof(ApiResponse<Uri>), (int)HttpStatusCode.Created)]
+    [ProducesResponseType(typeof(ApiResponse<WebhookEndpointDto>), (int)HttpStatusCode.Created)]
     public async Task<IActionResult> Create([FromBody] CreateWebHookEndpointRequest request)
     {
         var command = new CreateWebhookEndpointCommand(request.ProviderName, User.GetUserId());
 
         var result = await mediator.Send(command);
 
-        return CreatedAtAction(nameof(Create), ApiResponse<Uri>.SuccessResult(result));
+        return CreatedAtAction(nameof(Create), ApiResponse<WebhookEndpointDto>.SuccessResult(result));
     }
 
 
@@ -32,18 +33,24 @@ public class WebHookController(IMediator mediator) : ControllerBase
     [HttpPost("endpointId/{endpointId}")]
     [EnableRateLimiting("WebhookRateLimit")]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.TooManyRequests)]
     public async Task<IActionResult> Receive(Guid endpointId)
     {
         using var reader = new StreamReader(Request.Body);
+        var headers = Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
         string payload = await reader.ReadToEndAsync();
+
+        if (!HeaderValidator.ValidateHeaders(headers))
+        {
+            logger.LogWarning("Invalid headers received for endpointId: {EndpointId} from IP: {SourceIp}", endpointId, HttpContext.Connection.RemoteIpAddress?.ToString());
+            return BadRequest(ApiResponse.ErrorResult("Invalid headers"));
+        }
 
         string? sourceIp = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        var headers = Request.Headers
-            .ToDictionary(h => h.Key, h => h.Value.ToString());
-
         var command = new WebhookRequestReceivedCommand(sourceIp, endpointId, payload, JsonSerializer.Serialize(headers));
+
         await mediator.Send(command);
 
         return Ok(ApiResponse.SuccessResult("Received"));
@@ -59,12 +66,12 @@ public class WebHookController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("active-endpoint")]
-    [ProducesResponseType(typeof(ApiResponse<Uri?>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(ApiResponse<WebhookEndpointDto?>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetActiveEndpoint()
     {
         var query = new GetActiveWebhookEndpointQuery(User.GetUserId());
         var result = await mediator.Send(query);
-        return Ok(ApiResponse<Uri?>.SuccessResult(result));
+        return Ok(ApiResponse<WebhookEndpointDto?>.SuccessResult(result));
     }
 
 
