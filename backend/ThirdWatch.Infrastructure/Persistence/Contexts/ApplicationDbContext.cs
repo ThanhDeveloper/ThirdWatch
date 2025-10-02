@@ -1,5 +1,4 @@
 using MassTransit;
-using Microsoft.EntityFrameworkCore;
 using ThirdWatch.Domain.Entities.Base;
 
 namespace ThirdWatch.Infrastructure.Persistence.Contexts;

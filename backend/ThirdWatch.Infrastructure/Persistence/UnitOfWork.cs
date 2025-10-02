@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
