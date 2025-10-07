@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using ThirdWatch.Application.DTOs.Auth;
-using ThirdWatch.Application.Handlers.Commands.Auth;
 using ThirdWatch.Domain.Enums;
 using ThirdWatch.Shared.Options;
 

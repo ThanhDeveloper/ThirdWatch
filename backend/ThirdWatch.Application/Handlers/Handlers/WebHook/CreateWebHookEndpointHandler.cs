@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ThirdWatch.Application.DTOs.Webhooks;
-using ThirdWatch.Application.Handlers.Commands.Webhooks;
 
 namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 

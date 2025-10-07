@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using ThirdWatch.API.Models.Requests.WebHook;
 using ThirdWatch.API.Validators;
 using ThirdWatch.Application.DTOs.Webhooks;
-using ThirdWatch.Application.Handlers.Commands.Webhooks;
 using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.API.Controllers;

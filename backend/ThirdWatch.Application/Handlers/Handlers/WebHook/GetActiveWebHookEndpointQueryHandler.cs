@@ -8,7 +8,9 @@ public class GetActiveWebhookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfi
 {
     public async Task<WebhookEndpointDto?> Handle(GetActiveWebhookEndpointQuery request, CancellationToken cancellationToken)
     {
-        var activeEndpoint = await unitOfWork.WebhookEndpoints.Query()
+        var activeEndpoint = await unitOfWork.WebhookEndpoints
+            .Query()
+            .AsNoTracking()
             .Where(x => x.UserId == request.UserId && x.IsActive)
             .Select(x => new
             {

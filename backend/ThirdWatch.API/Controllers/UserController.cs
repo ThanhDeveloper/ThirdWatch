@@ -7,10 +7,10 @@ using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/user")]
 [Produces(MediaTypeNames.Application.Json)]
-[Authorize]
 public class UserController(IMediator mediator) : ControllerBase
 {
     [HttpGet("me")]

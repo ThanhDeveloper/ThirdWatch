@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ThirdWatch.Application.DTOs.Auth;
-using ThirdWatch.Application.Handlers.Commands.Auth;
 using ThirdWatch.Shared.Helpers;
 using ThirdWatch.Shared.Options;
 
