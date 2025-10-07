@@ -1,6 +1,8 @@
+using ThirdWatch.Application.DTOs.Webhooks;
+
 namespace ThirdWatch.Application.Handlers.Commands;
 
-public record CreateWebhookEndpointCommand(string ProviderName, Guid UserId) : IRequest<Uri>;
+public record CreateWebhookEndpointCommand(string ProviderName, Guid UserId) : IRequest<WebhookEndpointDto>;
 
 public record DeleteWebhookHistoriesCommand(Guid UserId) : IRequest;
 

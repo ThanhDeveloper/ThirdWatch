@@ -1,17 +1,19 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using ThirdWatch.Application.DTOs.Webhooks;
 
 namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
 
-public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<CreateWebhookEndpointHandler> logger) : IRequestHandler<CreateWebhookEndpointCommand, Uri>
+public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<CreateWebhookEndpointHandler> logger) : IRequestHandler<CreateWebhookEndpointCommand, WebhookEndpointDto>
 {
-    public async Task<Uri> Handle(CreateWebhookEndpointCommand request, CancellationToken cancellationToken)
+    public async Task<WebhookEndpointDto> Handle(CreateWebhookEndpointCommand request, CancellationToken cancellationToken)
     {
         var newEndpoint = new WebhookEndpoint
         {
             UserId = request.UserId,
             ProviderName = request.ProviderName,
             EndpointId = Guid.NewGuid(),
+            ExpirationTime = DateTimeOffset.UtcNow.AddHours(4),
             IsActive = true
         };
 
@@ -35,6 +37,9 @@ public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration
             }
         });
 
-        return new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{newEndpoint.EndpointId}");
+        return new WebhookEndpointDto(
+            new Uri($"{configuration["AppSettings:BaseApiUrl"]}/api/hooks/endpointId/{newEndpoint.EndpointId}"),
+            newEndpoint.ExpirationTime
+        );
     }
 }

@@ -12,7 +12,7 @@ public class CleanUpDeletedWebhookHistoryFilesJob(
     {
         logger.LogInformation("CleanUpDeletedWebhookHistoryFilesJob started at {DateTime}", DateTimeOffset.UtcNow);
 
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(30));
+        using var timer = new PeriodicTimer(TimeSpan.FromHours(8));
 
         try
         {

@@ -7,7 +7,7 @@ namespace ThirdWatch.Infrastructure.Persistence.Repositories;
 public class WebhookEndpointRepository(ApplicationDbContext context) : Repository<WebhookEndpoint>(context), IWebhookEndpointRepository
 {
     public async Task<WebhookEndpoint?> GetByEndpointIdAsync(Guid endpointId, CancellationToken cancellationToken = default)
-        => await DbSet.FirstOrDefaultAsync(h => h.EndpointId == endpointId && h.IsActive, cancellationToken);
+        => await DbSet.FirstOrDefaultAsync(h => h.EndpointId == endpointId && h.IsActive && h.ExpirationTime > DateTimeOffset.UtcNow, cancellationToken);
 
     public async Task DeactivateEndpointsAsync(Guid userId, CancellationToken cancellationToken = default)
         => await DbSet.Where(p => p.UserId == userId && p.IsActive)

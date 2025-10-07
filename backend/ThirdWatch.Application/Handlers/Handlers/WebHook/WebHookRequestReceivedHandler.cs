@@ -7,12 +7,12 @@ public class WebhookRequestReceivedHandler(IUnitOfWork unitOfWork, IEventPublish
     public async Task Handle(WebhookRequestReceivedCommand request, CancellationToken cancellationToken)
     {
         var existingEndpoint = await unitOfWork.WebhookEndpoints.GetByEndpointIdAsync(request.EndpointId, cancellationToken)
-            ?? throw new NotFoundException($"Webhook endpoint with ID {request.EndpointId} not found");
+            ?? throw new InvalidDataException($"Webhook endpoint with ID {request.EndpointId} not found or expired");
 
         var webhookReceivedEvent = new WebhookRequestReceivedIntegrationEvent(
             request.SourceIp,
             request.EndpointId,
-            request.Headers,
+            WebhookHistory.FilterSensitiveHeaders(request.Headers),
             request.Payload,
             DateTimeOffset.UtcNow,
             Guid.NewGuid().ToString()
