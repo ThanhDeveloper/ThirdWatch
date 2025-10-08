@@ -1,5 +1,3 @@
-using ThirdWatch.Application.Handlers.Commands;
-
 namespace ThirdWatch.Application.Handlers.Handlers.Notifications;
 
 public class DeleteNotificationCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteNotificationCommand>

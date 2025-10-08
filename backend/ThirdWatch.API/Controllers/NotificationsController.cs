@@ -3,7 +3,6 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ThirdWatch.Application.DTOs.Notifications;
-using ThirdWatch.Application.Handlers.Commands;
 using ThirdWatch.Shared.Extensions;
 
 namespace ThirdWatch.API.Controllers;
