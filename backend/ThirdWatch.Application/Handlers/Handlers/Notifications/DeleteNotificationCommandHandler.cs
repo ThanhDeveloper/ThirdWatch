@@ -4,8 +4,7 @@ public class DeleteNotificationCommandHandler(IUnitOfWork unitOfWork) : IRequest
 {
     public async Task Handle(DeleteNotificationCommand request, CancellationToken cancellationToken)
     {
-        bool isDeleted = await unitOfWork
-            .ExecuteAsync(async () => await unitOfWork.Notifications.DeleteNotificationAsync(request.UserId, request.NotificationId, cancellationToken));
+        bool isDeleted = await unitOfWork.Notifications.DeleteNotificationAsync(request.UserId, request.NotificationId, cancellationToken);
 
         if (!isDeleted)
         {

@@ -1,4 +1,3 @@
-using MassTransit.Initializers;
 using Microsoft.EntityFrameworkCore;
 using ThirdWatch.Application.DTOs.Notifications;
 

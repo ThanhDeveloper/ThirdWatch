@@ -23,7 +23,7 @@ public class NotificationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{notificationId:guid}/mark-as-read")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> MarkAsRead(Guid notificationId)
     {
@@ -33,7 +33,7 @@ public class NotificationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("mark-all-as-read")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> MarkAllAsRead()
     {
         var command = new MarkAllNotificationsAsReadCommand(User.GetUserId());
@@ -42,7 +42,7 @@ public class NotificationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{notificationId:guid}")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ApiResponse), (int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> DeleteNotification(Guid notificationId)
     {

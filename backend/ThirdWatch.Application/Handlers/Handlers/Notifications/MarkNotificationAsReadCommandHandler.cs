@@ -4,8 +4,7 @@ public class MarkNotificationAsReadCommandHandler(IUnitOfWork unitOfWork) : IReq
 {
     public async Task Handle(MarkNotificationAsReadCommand request, CancellationToken cancellationToken)
     {
-        bool isMarkedAsRead = await unitOfWork
-            .ExecuteAsync(async () => await unitOfWork.Notifications.MarkNotificationAsReadAsync(request.UserId, request.NotificationId, cancellationToken));
+        bool isMarkedAsRead = await unitOfWork.Notifications.MarkNotificationAsReadAsync(request.UserId, request.NotificationId, cancellationToken);
 
         if (!isMarkedAsRead)
         {

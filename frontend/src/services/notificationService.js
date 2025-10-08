@@ -83,18 +83,6 @@ class NotificationService {
     });
     this.notify();
   }
-
-  // Clear all notifications
-  async clearAll() {
-    try {
-      await api.delete('/notifications/clear-all');
-      this.notifications = [];
-      this.notify();
-    } catch (error) {
-      console.error('Failed to clear all notifications:', error);
-      throw error;
-    }
-  }
 }
 
 // Create singleton instance
