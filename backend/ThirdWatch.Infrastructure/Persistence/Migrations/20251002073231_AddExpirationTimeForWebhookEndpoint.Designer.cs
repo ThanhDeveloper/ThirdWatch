@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
 
@@ -11,9 +12,11 @@ using ThirdWatch.Infrastructure.Persistence.Contexts;
 namespace ThirdWatch.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251002073231_AddExpirationTimeForWebhookEndpoint")]
+    partial class AddExpirationTimeForWebhookEndpoint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,52 +197,6 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     b.ToTable("OutboxState");
                 });
 
-            modelBuilder.Entity("ThirdWatch.Domain.Entities.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications", t =>
-                        {
-                            t.HasCheckConstraint("CK_Notifications_Type_Enum", "[Type] IN (N'System', N'Warning', N'Info', N'Error', N'Reminder')");
-                        });
-                });
-
             modelBuilder.Entity("ThirdWatch.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -406,17 +363,6 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     b.ToTable("WebhookHistories");
                 });
 
-            modelBuilder.Entity("ThirdWatch.Domain.Entities.Notification", b =>
-                {
-                    b.HasOne("ThirdWatch.Domain.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ThirdWatch.Domain.Entities.WebhookEndpoint", b =>
                 {
                     b.HasOne("ThirdWatch.Domain.Entities.User", "User")
@@ -441,8 +387,6 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ThirdWatch.Domain.Entities.User", b =>
                 {
-                    b.Navigation("Notifications");
-
                     b.Navigation("WebhookEndpoints");
                 });
 

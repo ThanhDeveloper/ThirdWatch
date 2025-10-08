@@ -15,6 +15,8 @@ export function WebhookInspector() {
   const [activeEndpoint, setActiveEndpoint] = useState(null);
   const [currentUrl, setCurrentUrl] = useState('');
   const [endpointId, setEndpointId] = useState('');
+  const [expirationTime, setExpirationTime] = useState(null);
+  const [isExpired, setIsExpired] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isLive, setIsLive] = useState(false);
   const [lastRequestTime, setLastRequestTime] = useState(Date.now());
@@ -23,6 +25,7 @@ export function WebhookInspector() {
   const [hasNoEndpoint, setHasNoEndpoint] = useState(false);
   const [requestPayloads, setRequestPayloads] = useState({});
   const intervalRef = useRef(null);
+  const expirationCheckRef = useRef(null);
 
   const loadRequestPayload = async (request) => {
     try {
@@ -45,11 +48,18 @@ export function WebhookInspector() {
         
         if (endpoint) {
           setActiveEndpoint(endpoint);
-          const url = endpoint || '';
+          const url = endpoint.endpointUrl || '';
           setCurrentUrl(url);
           const urlParts = url.split('/');
           const extractedEndpointId = urlParts ? urlParts[urlParts.length - 1] : '';
           setEndpointId(extractedEndpointId);
+          setExpirationTime(endpoint.expirationTime);
+          
+          // Check if endpoint is expired
+          const now = new Date();
+          const expiration = new Date(endpoint.expirationTime);
+          setIsExpired(now > expiration);
+          
           setHasNoEndpoint(false);
           
           const histories = await webhookService.getHistories();
@@ -170,6 +180,32 @@ export function WebhookInspector() {
     };
   }, [isLive, activeEndpoint, currentUrl]);
 
+  // Check expiration status periodically
+  useEffect(() => {
+    if (expirationTime) {
+      // Initial check
+      const now = new Date();
+      const expiration = new Date(expirationTime);
+      setIsExpired(now > expiration);
+      
+      // Set up interval for periodic checks
+      expirationCheckRef.current = setInterval(() => {
+        const now = new Date();
+        const expiration = new Date(expirationTime);
+        setIsExpired(now > expiration);
+      }, 30000); // Check every 30 seconds for better responsiveness
+    } else {
+      if (expirationCheckRef.current) {
+        clearInterval(expirationCheckRef.current);
+        expirationCheckRef.current = null;
+      }
+    }
+
+    return () => {
+      if (expirationCheckRef.current) clearInterval(expirationCheckRef.current);
+    };
+  }, [expirationTime]);
+
   const handleRequestSelection = async (request) => {
     setSelectedRequest(request);
     
@@ -183,11 +219,18 @@ export function WebhookInspector() {
       const newEndpoint = await webhookService.createEndpoint(providerName);
       
       setActiveEndpoint(newEndpoint);
-      const url = newEndpoint || '';
+      const url = newEndpoint.endpointUrl || '';
       setCurrentUrl(url);
       const urlParts = url.split('/');
       const extractedEndpointId = urlParts ? urlParts[urlParts.length - 1] : '';
       setEndpointId(extractedEndpointId);
+      setExpirationTime(newEndpoint.expirationTime);
+      
+      // Check if endpoint is expired
+      const now = new Date();
+      const expiration = new Date(newEndpoint.expirationTime);
+      setIsExpired(now > expiration);
+      
       setIsLive(false);
       setHasNoEndpoint(false);
       setShowEndpointCreator(false);
@@ -288,6 +331,8 @@ export function WebhookInspector() {
         isLive={isLive}
         requestsCount={requests.length}
         lastRequestTime={lastRequestTime}
+        expirationTime={expirationTime}
+        isExpired={isExpired}
         onNewEndpoint={handleShowEndpointCreator}
         onToggleLiveMode={toggleLiveMode}
         onClearLogs={handleClearLogs}

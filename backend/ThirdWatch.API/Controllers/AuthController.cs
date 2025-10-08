@@ -3,7 +3,6 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ThirdWatch.API.Models.Requests.Auth;
-using ThirdWatch.Application.Handlers.Commands.Auth;
 
 namespace ThirdWatch.API.Controllers;
 

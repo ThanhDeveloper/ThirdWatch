@@ -6,7 +6,7 @@ import apiClient from './api';
 class WebhookService {
   /**
    * Get the active webhook endpoint
-   * @returns {Promise<Object|null>} Active endpoint data or null
+   * @returns {Promise<Object|null>} Active endpoint data with endpointUrl and expirationTime or null
    */
   async getActiveEndpoint() {
     try {
@@ -24,7 +24,7 @@ class WebhookService {
   /**
    * Create a new webhook endpoint
    * @param {string} providerName - Provider name (e.g., GitHub, Stripe)
-   * @returns {Promise<Object>} Created endpoint data
+   * @returns {Promise<Object>} Created endpoint data with endpointUrl and expirationTime
    */
   async createEndpoint(providerName) {
     try {

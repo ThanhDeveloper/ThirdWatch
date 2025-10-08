@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography, Button, Badge, Input } from '@material-tailwind/react';
-import { PlusIcon, TrashIcon, SignalIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, SignalIcon, GlobeAltIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import CopyButton from '@/components/common/CopyButton';
 import DownloadButton from '@/components/common/DownloadButton';
 
@@ -9,12 +9,55 @@ const WebhookHeader = ({
   isLive,
   requestsCount,
   lastRequestTime,
+  expirationTime,
+  isExpired,
   onNewEndpoint,
   onToggleLiveMode,
   onClearLogs,
   onExportLogs,
   formatTimestamp,
 }) => {
+  const formatExpirationTime = (expirationTime) => {
+    if (!expirationTime) return '';
+    const expiration = new Date(expirationTime);
+    const now = new Date();
+    const diffInMs = expiration.getTime() - now.getTime();
+    
+    if (diffInMs <= 0) {
+      return 'Expired';
+    }
+    
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInMinutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (diffInHours > 24) {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ${diffInHours % 24} hour${(diffInHours % 24) !== 1 ? 's' : ''}`;
+    } else if (diffInHours > 0) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''}`;
+    } else {
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''}`;
+    }
+  };
+
+  const getExpirationMessage = () => {
+    if (!expirationTime) return '';
+    
+    if (isExpired) {
+      return 'Endpoint has expired - Create a new endpoint to receive webhooks';
+    } else {
+      const timeRemaining = formatExpirationTime(expirationTime);
+      const fullDateTime = new Date(expirationTime).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+      return `Endpoint expires in ${timeRemaining} (${fullDateTime})`;
+    }
+  };
   return (
     <div className="mb-6">
       {/* Header Section */}
@@ -127,6 +170,29 @@ const WebhookHeader = ({
             disabled={!currentUrl}
           />
         </div>
+        
+        {/* Expiration status */}
+        {expirationTime && (
+          <div className={`mt-3 p-3 rounded-lg flex items-center gap-2 ${
+            isExpired 
+              ? 'bg-red-50 border border-red-200' 
+              : 'bg-blue-50 border border-blue-200'
+          }`}>
+            {isExpired ? (
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-500 flex-shrink-0" />
+            ) : (
+              <ClockIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <Typography 
+                variant="small" 
+                className={`font-medium ${isExpired ? 'text-red-700' : 'text-blue-700'}`}
+              >
+                {getExpirationMessage()}
+              </Typography>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
