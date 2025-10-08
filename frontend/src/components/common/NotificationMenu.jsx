@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
   Menu,
   MenuHandler,
@@ -216,6 +217,25 @@ const NotificationMenu = ({ notifications = [], onMarkAsRead, onMarkAllAsRead, o
       </MenuList>
     </Menu>
   );
+};
+
+// PropTypes for NotificationMenu
+NotificationMenu.propTypes = {
+  notifications: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    type: PropTypes.oneOf(['System', 'Warning', 'Info', 'Error', 'Reminder']).isRequired,
+    isRead: PropTypes.bool.isRequired,
+    createdAt: PropTypes.string.isRequired,
+  })),
+  onMarkAsRead: PropTypes.func.isRequired,
+  onMarkAllAsRead: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+};
+
+NotificationMenu.defaultProps = {
+  notifications: [],
 };
 
 export default NotificationMenu;

@@ -54,10 +54,17 @@ export function DashboardNavbar() {
       });
 
     // Load notifications
-    notificationService.getNotifications().then(() => {
-      if (!isMounted) return;
-      setNotifications(notificationService.notifications);
-    });
+    notificationService.getNotifications()
+      .then(() => {
+        if (!isMounted) return;
+        setNotifications(notificationService.notifications);
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error('Failed to load notifications:', error);
+        // Set empty array on error
+        setNotifications([]);
+      });
 
     // Subscribe to notification updates
     const unsubscribe = notificationService.subscribe((updatedNotifications) => {
@@ -76,16 +83,28 @@ export function DashboardNavbar() {
     authService.logout();
   };
 
-  const handleMarkAsRead = (notificationId) => {
-    notificationService.markAsRead(notificationId);
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    notificationService.markAllAsRead();
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
-  const handleDeleteNotification = (notificationId) => {
-    notificationService.deleteNotification(notificationId);
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
   };
 
   return (
