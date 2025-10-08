@@ -1,9 +1,8 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ThirdWatch.Application.Services.Interfaces;
-using ThirdWatch.Domain.Events.WebhookReceived;
+using ThirdWatch.Domain.Events;
 using ThirdWatch.Domain.Interfaces;
-using ThirdWatch.Infrastructure.Consumers.Base;
 
 namespace ThirdWatch.Infrastructure.Consumers;
 

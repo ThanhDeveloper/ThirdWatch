@@ -31,6 +31,7 @@ public class LoginCommandHandler(
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await unitOfWork.Users.UpdateAsync(user, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         string accessToken = jwtService.GenerateAccessToken(user);

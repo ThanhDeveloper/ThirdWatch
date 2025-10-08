@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ThirdWatch.Application.DTOs.Webhooks;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public class GetWebhookHistoriesQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetWebhookHistoriesQuery, IReadOnlyList<WebhookHistoriesDto>>
 {

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ThirdWatch.Application.Handlers.Commands.Webhooks;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public class CreateWebhookEndpointHandler(IUnitOfWork unitOfWork, IConfiguration configuration, ILogger<CreateWebhookEndpointHandler> logger) : IRequestHandler<CreateWebhookEndpointCommand, Uri>
 {

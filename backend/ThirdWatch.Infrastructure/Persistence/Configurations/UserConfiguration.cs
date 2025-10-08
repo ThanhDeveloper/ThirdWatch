@@ -52,5 +52,9 @@ public class UserConfiguration : BaseEntityConfiguration<User>
         builder.HasMany(p => p.WebhookEndpoints)
             .WithOne(p => p.User)
             .HasForeignKey(p => p.UserId);
+
+        builder.HasMany(p => p.Notifications)
+        .WithOne(p => p.User)
+        .HasForeignKey(p => p.UserId);
     }
 }

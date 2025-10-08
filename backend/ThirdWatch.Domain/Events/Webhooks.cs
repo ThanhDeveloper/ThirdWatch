@@ -1,6 +1,6 @@
 using ThirdWatch.Domain.Events.Base;
 
-namespace ThirdWatch.Domain.Events.WebhookReceived;
+namespace ThirdWatch.Domain.Events;
 
 /// <summary>
 /// Integration event published when a webhook is received and logged
@@ -16,5 +16,6 @@ public sealed record WebhookRequestReceivedIntegrationEvent(
     string Headers,
     string Payload,
     DateTimeOffset ReceivedAt,
-    string CorrelationId = ""
+    string CorrelationId
 ) : IIntegrationEvent;
+

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using ThirdWatch.Application.DTOs.Auth;
 using ThirdWatch.Application.Handlers.Commands.Auth;
 using ThirdWatch.Domain.Enums;
+using ThirdWatch.Domain.Events;
 using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.Application.Handlers.Handlers.Auth;
@@ -10,6 +11,7 @@ public class GoogleLoginCommandHandler(
     IUnitOfWork unitOfWork,
     IJwtService jwtService,
     IOptions<JwtOptions> jwtOptions,
+    IEventPublisher eventPublisher,
     IGoogleAuthService googleAuthService) : IRequestHandler<GoogleLoginCommand, LoginResponseDto>
 {
     public async Task<LoginResponseDto> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
@@ -54,6 +56,13 @@ public class GoogleLoginCommandHandler(
             };
 
             user = await unitOfWork.Users.AddAsync(newUser, cancellationToken);
+
+            var userRegistrationEvent = new UserRegistrationEvent(
+                user.Id,
+                Guid.NewGuid().ToString()
+            );
+
+            await eventPublisher.PublishAsync(userRegistrationEvent, cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

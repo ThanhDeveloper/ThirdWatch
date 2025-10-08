@@ -1,7 +1,7 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
-namespace ThirdWatch.Infrastructure.Consumers.Base;
+namespace ThirdWatch.Infrastructure.Consumers;
 
 /// <summary>
 /// Base consumer class with common functionality

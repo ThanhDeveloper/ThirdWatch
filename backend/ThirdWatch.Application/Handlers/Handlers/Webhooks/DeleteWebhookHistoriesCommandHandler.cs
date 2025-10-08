@@ -1,6 +1,6 @@
 using ThirdWatch.Application.Handlers.Commands.Webhooks;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public class DeleteWebhookHistoriesCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<DeleteWebhookHistoriesCommand>
 {

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ThirdWatch.API.Extensions;
 using ThirdWatch.API.Filters;
 using ThirdWatch.API.Middleware;
@@ -16,7 +17,8 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddHostedServices();
 
 builder.Services.AddControllers(options => options.Filters.Add<ValidateModelFilter>())
-                .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
+                .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true)
+                .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddEndpointsApiExplorer();
 
