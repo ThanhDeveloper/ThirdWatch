@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Compile Remove="Handlers\Commands\Notifications\**" />
+    <EmbeddedResource Remove="Handlers\Commands\Notifications\**" />
+    <None Remove="Handlers\Commands\Notifications\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ThirdWatch.Domain\ThirdWatch.Domain.csproj" />
     <ProjectReference Include="..\ThirdWatch.Shared\ThirdWatch.Shared.csproj" />
   </ItemGroup>
@@ -9,9 +14,5 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="MassTransit" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Handlers\Commands\Notifications\" />
   </ItemGroup>
 </Project>
