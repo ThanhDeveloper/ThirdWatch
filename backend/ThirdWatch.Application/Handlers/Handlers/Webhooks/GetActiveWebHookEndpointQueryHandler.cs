@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ThirdWatch.Application.DTOs.Webhooks;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public class GetActiveWebhookEndpointQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration) : IRequestHandler<GetActiveWebhookEndpointQuery, WebhookEndpointDto?>
 {

@@ -10,4 +10,8 @@
     <PackageReference Include="MediatR" />
     <PackageReference Include="MassTransit" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Handlers\Commands\Notifications\" />
+  </ItemGroup>
 </Project>

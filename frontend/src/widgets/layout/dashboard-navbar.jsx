@@ -16,9 +16,6 @@ import {
 import {
   UserCircleIcon,
   Cog6ToothIcon,
-  BellIcon,
-  ClockIcon,
-  CreditCardIcon,
   Bars3Icon,
 } from '@heroicons/react/24/solid';
 import {
@@ -28,7 +25,9 @@ import {
 } from '@/context';
 import authService from '@/services/authService';
 import userService from '@/services/userService';
+import notificationService from '@/services/notificationService';
 import fallbackProfilePic from '@/assets/images/avatar.jpg';
+import NotificationMenu from '@/components/common/NotificationMenu';
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -37,9 +36,12 @@ export function DashboardNavbar() {
   const [layout, page] = pathname.split('/').filter((el) => el !== '');
 
   const [currentUser, setCurrentUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
+    
+    // Load user data
     userService
       .getCurrentUser()
       .then((u) => {
@@ -50,8 +52,30 @@ export function DashboardNavbar() {
         if (!isMounted) return;
         setCurrentUser(null);
       });
+
+    // Load notifications
+    notificationService.getNotifications()
+      .then(() => {
+        if (!isMounted) return;
+        setNotifications(notificationService.notifications);
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error('Failed to load notifications:', error);
+        // Set empty array on error
+        setNotifications([]);
+      });
+
+    // Subscribe to notification updates
+    const unsubscribe = notificationService.subscribe((updatedNotifications) => {
+      if (isMounted) {
+        setNotifications([...updatedNotifications]);
+      }
+    });
+
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, []);
 
@@ -59,25 +83,49 @@ export function DashboardNavbar() {
     authService.logout();
   };
 
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  };
+
   return (
     <Navbar
       color={fixedNavbar ? 'white' : 'transparent'}
       className={`rounded-xl transition-all ${fixedNavbar
-        ? 'sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5'
-        : 'px-0 py-1'
+        ? 'sticky top-12 z-40 py-3 shadow-md shadow-blue-gray-500/5'
+        : 'px-0 py-1 mt-2'
         }`}
       fullWidth
       blurred={fixedNavbar}
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
-        <div className="capitalize">
+        <div className="capitalize flex flex-col justify-center">
           <Breadcrumbs
-            className={`bg-transparent p-0 transition-all ${fixedNavbar ? 'mt-1' : ''
+            className={`bg-transparent p-0 transition-all ${fixedNavbar ? 'mt-0' : ''
               }`}
           >
             <Link to={`/${layout}`}>
               <Typography
-                variant="small"
+                variant="paragraph"
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
               >
@@ -85,14 +133,14 @@ export function DashboardNavbar() {
               </Typography>
             </Link>
             <Typography
-              variant="small"
+              variant="paragraph"
               color="blue-gray"
               className="font-normal"
             >
               {page}
             </Typography>
           </Breadcrumbs>
-          <Typography variant="h6" color="blue-gray">
+          <Typography variant="h5" color="blue-gray" className="mt-1">
             {page}
           </Typography>
         </div>
@@ -124,7 +172,7 @@ export function DashboardNavbar() {
                   variant="circular"
                   className="mr-2"
                 />
-                <span className="max-w-[140px] truncate" title={currentUser?.name || 'User'}>
+                <span className="max-w-[140px] truncate text-base font-medium" title={currentUser?.name || 'User'}>
                   {currentUser?.name || 'User'}
                 </span>
               </Button>
@@ -139,7 +187,7 @@ export function DashboardNavbar() {
                 />
                 <div>
                   <Typography
-                    variant="small"
+                    variant="paragraph"
                     color="blue-gray"
                     className="mb-1 font-normal"
                   >
@@ -150,7 +198,7 @@ export function DashboardNavbar() {
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60 max-w-[240px] truncate"
+                    className="flex items-center gap-1 text-sm font-normal opacity-60 max-w-[240px] truncate"
                   >
                     <span title={currentUser?.email || 'user@example.com'}>
                       {currentUser?.email || 'user@example.com'}
@@ -199,90 +247,18 @@ export function DashboardNavbar() {
             </MenuList>
           </Menu>
 
-          <Menu>
-            <MenuHandler>
-              <IconButton variant="text" color="blue-gray">
-                <BellIcon className="h-5 w-5 text-blue-gray-500" />
-              </IconButton>
-            </MenuHandler>
-            <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal"
-                  >
-                    <strong>New message</strong> from Laur
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
-                  >
-                    <ClockIcon className="h-3.5 w-3.5" /> 13 minutes ago
-                  </Typography>
-                </div>
-              </MenuItem>
-              <MenuItem className="flex items-center gap-4">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/small-logos/logo-spotify.svg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal"
-                  >
-                    <strong>New album</strong> by Travis Scott
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
-                  >
-                    <ClockIcon className="h-3.5 w-3.5" /> 1 day ago
-                  </Typography>
-                </div>
-              </MenuItem>
-              <MenuItem className="flex items-center gap-4">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900">
-                  <CreditCardIcon className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal"
-                  >
-                    Payment successfully completed
-                  </Typography>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
-                  >
-                    <ClockIcon className="h-3.5 w-3.5" /> 2 days ago
-                  </Typography>
-                </div>
-              </MenuItem>
-            </MenuList>
-          </Menu>
+          <NotificationMenu
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onDelete={handleDeleteNotification}
+          />
           <IconButton
             variant="text"
             color="blue-gray"
             onClick={() => setOpenConfigurator(dispatch, true)}
           >
-            <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500" />
+            <Cog6ToothIcon className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
         </div>
       </div>

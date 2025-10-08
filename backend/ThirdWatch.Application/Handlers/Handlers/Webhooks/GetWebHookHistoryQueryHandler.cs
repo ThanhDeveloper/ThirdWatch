@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ThirdWatch.Application.DTOs.Webhooks;
 using ThirdWatch.Shared.Helpers;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public sealed class GetWebhookHistoryQueryHandler(
     IUnitOfWork unitOfWork,

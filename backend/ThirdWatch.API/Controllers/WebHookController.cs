@@ -59,7 +59,7 @@ public class WebHookController(IMediator mediator, ILogger<WebHookController> lo
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<WebhookHistoriesDto>>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetHistories()
     {
-        var query = new GetWebhookHistoriesQuery(Guid.Parse("467ABF17-13D6-495A-BBF4-7DB0C9422C77"));
+        var query = new GetWebhookHistoriesQuery(User.GetUserId());
         var result = await mediator.Send(query);
         return Ok(ApiResponse<IReadOnlyList<WebhookHistoriesDto>>.SuccessResult(result));
     }

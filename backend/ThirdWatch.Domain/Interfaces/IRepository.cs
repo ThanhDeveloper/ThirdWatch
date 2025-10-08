@@ -28,3 +28,10 @@ public interface IWebhookHistoryRepository : IRepository<WebhookHistory>
 {
     Task DeleteWebhookHistoriesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
 }
+
+public interface INotificationRepository : IRepository<Notification>
+{
+    Task<bool> MarkAllNotificationsAsReadAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<bool> MarkNotificationAsReadAsync(Guid userId, Guid notificationId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteNotificationAsync(Guid userId, Guid notificationId, CancellationToken cancellationToken = default);
+}

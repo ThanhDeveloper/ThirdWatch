@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
 
@@ -11,9 +12,11 @@ using ThirdWatch.Infrastructure.Persistence.Contexts;
 namespace ThirdWatch.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251005041032_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -335,9 +338,6 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("EndpointId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("ExpirationTime")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -348,6 +348,9 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("ResponseStatusCode")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");

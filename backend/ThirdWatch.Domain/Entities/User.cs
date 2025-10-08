@@ -1,5 +1,3 @@
-using ThirdWatch.Domain.Enums;
-
 namespace ThirdWatch.Domain.Entities;
 
 public class User : BaseEntity
@@ -28,6 +26,10 @@ public class User : BaseEntity
 
 #pragma warning disable CA2227 // Collection properties should be read only
     public ICollection<WebhookEndpoint> WebhookEndpoints { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
+
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ICollection<Notification> Notifications { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 
     public string GetFullName()

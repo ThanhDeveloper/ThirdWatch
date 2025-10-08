@@ -1,6 +1,6 @@
-using ThirdWatch.Domain.Events.WebhookReceived;
+using ThirdWatch.Domain.Events;
 
-namespace ThirdWatch.Application.Handlers.Handlers.Webhook;
+namespace ThirdWatch.Application.Handlers.Handlers.Webhooks;
 
 public class WebhookRequestReceivedHandler(IUnitOfWork unitOfWork, IEventPublisher eventPublisher) : IRequestHandler<WebhookRequestReceivedCommand>
 {
