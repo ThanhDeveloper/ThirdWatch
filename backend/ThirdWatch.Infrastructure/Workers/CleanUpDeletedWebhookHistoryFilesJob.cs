@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Domain.Interfaces;
 
-namespace ThirdWatch.API.Workers;
+namespace ThirdWatch.Infrastructure.Workers;
 
 public class CleanUpDeletedWebhookHistoryFilesJob(
     IServiceScopeFactory scopeFactory,

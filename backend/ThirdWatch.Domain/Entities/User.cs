@@ -32,6 +32,10 @@ public class User : BaseEntity
     public ICollection<Notification> Notifications { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ICollection<Site> Sites { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
+
     public string GetFullName()
     {
         return $"{FirstName} {LastName}".Trim();

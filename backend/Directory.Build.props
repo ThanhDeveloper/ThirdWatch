@@ -36,7 +36,7 @@
 
     <NoWarn>
       $(NoWarn),
-
+    
       AD0001, <!-- Temporarily not a warning, .NET8 SDK has issues -->
 
       CA1716, <!-- At this point we don't care about other .NET language -->
@@ -51,6 +51,7 @@
       CA1822, <!-- To inject Ilogger<T> into mutation -->
       CA1054, <!-- URI-like properties should not be strings -->
       CA1056, <!-- URI-like properties should not be strings -->
+      CA1031, <!-- We do want to catch all exceptions at the top level to log them -->
       <!-- To tackle -->
       CA1848, <!-- We should use the LoggerMessage delegates for performance: https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1848 -->
     </NoWarn>
