@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -30,7 +30,7 @@ namespace ThirdWatch.Infrastructure.Persistence.Migrations
                     P99ms = table.Column<int>(type: "int", nullable: false),
                     IsSslValid = table.Column<bool>(type: "bit", nullable: false),
                     SslExpiresInDays = table.Column<int>(type: "int", nullable: false),
-                    ResponseTrendData = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ResponseTrendData = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     LastStatus = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     HealthStatus = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),

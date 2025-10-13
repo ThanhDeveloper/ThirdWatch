@@ -14,7 +14,7 @@ public class SiteConfiguration : BaseEntityConfiguration<Site>
 
         builder.Property(x => x.HealthStatus).HasEnumToStringConversion();
 
-        builder.Property(p => p.ResponseTrendData).HasMaxLength(100);
+        builder.Property(p => p.ResponseTrendData).HasMaxLength(1000);
 
         builder.Property(x => x.Url).HasMaxLength(255);
 
