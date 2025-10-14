@@ -14,9 +14,16 @@ import {
   ExclamationTriangleIcon, 
   XCircleIcon,
   ClockIcon,
-  ServerIcon
+  ServerIcon,
+  CogIcon
 } from "@heroicons/react/24/solid";
+import { 
+  PlusIcon
+} from "@heroicons/react/24/outline";
 import { HealthCard } from '@/components/HealthCard';
+import SiteManager from '@/components/health-check/SiteManager';
+import HealthStatistics from '@/components/health-check/HealthStatistics';
+import MockDataService from '@/services/mockDataService';
 import { 
   checkAllEndpoints, 
   calculateOverallStatus, 
@@ -27,123 +34,183 @@ import {
   HEALTH_STATUS
 } from '@/services/healthCheckService';
 
-/**
- * Health Check Dashboard
- * Trang kiểm tra tình trạng hoạt động của các endpoint với advanced metrics
- */
 export function HealthCheckDashboard() {
   const [healthResults, setHealthResults] = useState([]);
   const [overallStatus, setOverallStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheck, setLastCheck] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [healthHistory, setHealthHistory] = useState([]); // Lưu lịch sử health check
+  const [healthHistory, setHealthHistory] = useState([]);
+  const [userSites, setUserSites] = useState([]);
+  const [showSiteManager, setShowSiteManager] = useState(false);
+  const [statsRefreshTrigger, setStatsRefreshTrigger] = useState(0);
 
-  /**
-   * Thực hiện health check cho tất cả endpoint
-   */
+  // Mock user sites for demo - in real app this would come from API
+  const loadUserSites = useCallback(() => {
+    try {
+      const sites = MockDataService.getUserSites();
+      setUserSites(sites);
+    } catch (error) {
+      console.error('Error loading user sites:', error);
+      // Fallback to default sites
+      const defaultSites = [
+        {
+          id: 1,
+          name: 'Google',
+          url: 'https://www.google.com',
+          type: 'website',
+          interval: 300,
+          description: 'Google Search Engine',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: 'GitHub API',
+          url: 'https://api.github.com',
+          type: 'api',
+          interval: 300,
+          description: 'GitHub REST API',
+          isActive: true,
+          createdAt: new Date().toISOString()
+        }
+      ];
+      setUserSites(defaultSites);
+      MockDataService.saveUserSites(defaultSites);
+    }
+  }, []);
+
   const performHealthCheck = useCallback(async () => {
+    if (userSites.length === 0) return;
+    
     setIsLoading(true);
     try {
-      const results = await checkAllEndpoints();
+      // Use userSites URLs for health check
+      const siteUrls = userSites.filter(site => site.isActive).map(site => site.url);
+      const results = await checkAllEndpoints(siteUrls);
       const overall = calculateOverallStatus(results);
       
       setHealthResults(results);
       setOverallStatus(overall);
       setLastCheck(new Date().toISOString());
       
-      // Cập nhật lịch sử health check
       setHealthHistory(prev => {
         const newHistory = [...prev, ...results];
-        // Giữ tối đa 50 records cho mỗi endpoint
-        const limitedHistory = newHistory.slice(-250); // 50 records x 5 endpoints
+        const limitedHistory = newHistory.slice(-250);
         return limitedHistory;
       });
       
-      // Lưu kết quả vào localStorage
+      // Save results using MockDataService
+      MockDataService.saveHealthResults(results);
       saveHealthCheckResults(results);
+      
+      // Trigger stats refresh
+      setStatsRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Health check failed:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [userSites]);
 
-  /**
-   * Load dữ liệu từ localStorage khi component mount
-   */
-  useEffect(() => {
-    const storedData = getStoredHealthCheckResults();
-    if (storedData && storedData.results) {
-      setHealthResults(storedData.results);
-      setLastCheck(storedData.timestamp);
-      setOverallStatus(calculateOverallStatus(storedData.results));
+  const handleSitesUpdated = useCallback((updatedSites) => {
+    if (updatedSites) {
+      // Save updated sites using MockDataService
+      MockDataService.saveUserSites(updatedSites);
+      setUserSites(updatedSites);
     } else {
-      // Nếu không có dữ liệu stored, thực hiện check ngay
-      performHealthCheck();
+      // Reload from MockDataService
+      loadUserSites();
     }
-  }, [performHealthCheck]);
+    setShowSiteManager(false);
+    // Trigger health check for updated sites
+    setTimeout(() => {
+      performHealthCheck();
+    }, 500);
+  }, [loadUserSites, performHealthCheck]);
 
-  /**
-   * Auto refresh mỗi 30 giây
-   */
   useEffect(() => {
-    if (!autoRefresh) return;
+    loadUserSites();
+  }, []); // Remove loadUserSites dependency to avoid infinite loop
+
+  useEffect(() => {
+    if (userSites.length > 0) {
+      const storedData = getStoredHealthCheckResults();
+      if (storedData && storedData.results) {
+        setHealthResults(storedData.results);
+        setLastCheck(storedData.timestamp);
+        setOverallStatus(calculateOverallStatus(storedData.results));
+      } else {
+        performHealthCheck();
+      }
+    }
+  }, [userSites]); // Only depend on userSites
+
+  useEffect(() => {
+    if (!autoRefresh || userSites.length === 0) return;
 
     const interval = setInterval(() => {
       performHealthCheck();
-    }, 30000); // 30 giây
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [autoRefresh, performHealthCheck]);
 
-  /**
-   * Lấy icon cho trạng thái tổng quan
-   */
   const getOverallIcon = (status) => {
-    const iconProps = { className: "h-6 w-6 lg:h-8 lg:w-8" };
+    const iconProps = { className: "h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8" };
     switch (status) {
       case HEALTH_STATUS.HEALTHY:
-        return <CheckCircleIcon {...iconProps} className="h-6 w-6 lg:h-8 lg:w-8 text-green-600" />;
+        return <CheckCircleIcon {...iconProps} className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-green-600" />;
       case HEALTH_STATUS.WARNING:
-        return <ExclamationTriangleIcon {...iconProps} className="h-6 w-6 lg:h-8 lg:w-8 text-amber-600" />;
+        return <ExclamationTriangleIcon {...iconProps} className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-amber-600" />;
       case HEALTH_STATUS.DOWN:
-        return <XCircleIcon {...iconProps} className="h-6 w-6 lg:h-8 lg:w-8 text-red-600" />;
+        return <XCircleIcon {...iconProps} className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-red-600" />;
       default:
-        return <ServerIcon {...iconProps} className="h-6 w-6 lg:h-8 lg:w-8 text-gray-600" />;
+        return <ServerIcon {...iconProps} className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-gray-600" />;
     }
   };
 
   const overallStatusConfig = getStatusColor(overallStatus?.status);
 
   return (
-    <div className="mt-6 lg:mt-12 mb-8 flex flex-col gap-6 lg:gap-8 px-4 sm:px-6 lg:px-0">
+    <div className="mt-4 md:mt-8 lg:mt-12 mb-8 flex flex-col gap-4 md:gap-6 lg:gap-8 px-4 md:px-6 lg:px-8 xl:px-0">
       {/* Header với tổng quan */}
       <Card className="shadow-lg">
-        <CardHeader variant="gradient" color="blue-gray" className="mb-6 lg:mb-8 p-4 lg:p-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700">
+        <CardHeader variant="gradient" color="blue-gray" className="mb-4 md:mb-6 lg:mb-8 p-4 md:p-5 lg:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
-            <div className="flex items-center space-x-3 lg:space-x-4">
-              <ServerIcon className="h-6 w-6 lg:h-8 lg:w-8 text-white drop-shadow-lg" />
+            <div className="flex items-center space-x-3 md:space-x-4">
+              <ServerIcon className="h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 text-white" />
               <div>
-                <Typography variant="h5" color="white" className="lg:text-2xl font-bold drop-shadow-md">
+                <Typography variant="h5" color="white" className="md:text-xl lg:text-2xl font-bold">
                   Health Check Dashboard
                 </Typography>
-                <Typography variant="small" color="white" className="opacity-90 drop-shadow-sm text-xs lg:text-sm">
-                  Real-time monitoring with advanced performance metrics
+                <Typography variant="small" color="white" className="opacity-90 text-xs md:text-sm">
+                  Real-time monitoring with performance metrics
                 </Typography>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4">
               <Button
                 variant="outlined"
                 color="white"
                 size="sm"
                 onClick={() => setAutoRefresh(!autoRefresh)}
-                className={`flex items-center justify-center space-x-2 transition-all duration-200 ${autoRefresh ? 'bg-white/10 border-white/30' : 'hover:bg-white/10'}`}
+                className={`flex items-center justify-center space-x-2 transition-all duration-200 text-xs md:text-sm ${autoRefresh ? 'bg-white/20 border-white/40' : 'hover:bg-white/10'}`}
               >
                 <ClockIcon className="h-4 w-4" />
                 <span className="font-medium">{autoRefresh ? 'Auto: ON' : 'Auto: OFF'}</span>
+              </Button>
+              
+              <Button
+                variant="outlined"
+                color="white"
+                size="sm"
+                onClick={() => setShowSiteManager(true)}
+                className="flex items-center justify-center space-x-2 text-white hover:bg-white hover:text-blue-700 transition-all duration-200 text-xs md:text-sm"
+              >
+                <CogIcon className="h-4 w-4" />
+                <span className="font-medium">Manage Sites</span>
               </Button>
               
               <Button
@@ -152,7 +219,7 @@ export function HealthCheckDashboard() {
                 size="sm"
                 onClick={performHealthCheck}
                 disabled={isLoading}
-                className="flex items-center justify-center space-x-2 text-blue-700 hover:text-blue-800 bg-white hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="flex items-center justify-center space-x-2 text-blue-700 hover:text-blue-800 bg-white hover:bg-gray-50 transition-all duration-200 text-xs md:text-sm"
               >
                 <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 <span className="font-medium">Check Now</span>
@@ -161,29 +228,45 @@ export function HealthCheckDashboard() {
           </div>
         </CardHeader>
         
-        <CardBody className="pt-0 px-4 lg:px-6">
-          {/* Trạng thái tổng quan */}
-          {overallStatus && (
+        <CardBody className="pt-0 px-4 md:px-5 lg:px-6">
+          {userSites.length === 0 ? (
+            <div className="text-center py-12">
+              <ServerIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <Typography variant="h6" className="text-gray-600 mb-2">
+                No sites configured for monitoring
+              </Typography>
+              <Typography variant="small" className="text-gray-500 mb-6">
+                Add websites, APIs, or servers to start monitoring their health status
+              </Typography>
+              <Button
+                variant="gradient"
+                color="blue"
+                onClick={() => setShowSiteManager(true)}
+                className="flex items-center space-x-2 mx-auto"
+              >
+                <PlusIcon className="h-4 w-4" />
+                <span>Add Your First Site</span>
+              </Button>
+            </div>
+          ) : overallStatus && (
             <>
-              {/* Main Status Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
-                {/* Overall Status */}
-                <div className={`col-span-1 sm:col-span-2 lg:col-span-2 p-4 lg:p-6 rounded-xl shadow-lg ${overallStatusConfig.bgColor} border-2 ${overallStatusConfig.borderColor} transition-all duration-300 hover:shadow-xl`}>
-                  <div className="flex items-center space-x-3 lg:space-x-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 lg:gap-6">
+                <div className={`col-span-1 md:col-span-3 lg:col-span-2 p-4 md:p-5 lg:p-6 rounded-xl border ${overallStatusConfig.borderColor} transition-all duration-300 hover:shadow-md bg-white`}>
+                  <div className="flex items-center space-x-3 md:space-x-4">
                     {getOverallIcon(overallStatus.status)}
                     <div>
-                      <Typography variant="h6" className={`lg:text-xl font-bold ${overallStatusConfig.textColor}`}>
+                      <Typography variant="h6" className={`md:text-lg lg:text-xl font-bold ${overallStatusConfig.textColor}`}>
                         System {overallStatus.status === HEALTH_STATUS.HEALTHY ? 'Healthy' : 
                                 overallStatus.status === HEALTH_STATUS.WARNING ? 'Warning' : 'Down'}
                       </Typography>
-                      <Typography variant="small" className="text-gray-700 font-medium">
+                      <Typography variant="small" className="text-gray-600 font-medium text-xs md:text-sm">
                         {overallStatus.healthy}/{overallStatus.total} services healthy
                       </Typography>
                     </div>
                   </div>
                   
-                  <div className="mt-3 lg:mt-4">
-                    <div className="flex justify-between text-sm text-gray-700 mb-2 font-medium">
+                  <div className="mt-3 md:mt-4">
+                    <div className="flex justify-between text-xs md:text-sm text-gray-600 mb-2 font-medium">
                       <span>Health Score</span>
                       <span>{overallStatus.healthyPercentage}%</span>
                     </div>
@@ -192,105 +275,96 @@ export function HealthCheckDashboard() {
                       variant="gradient"
                       color={overallStatus.status === HEALTH_STATUS.HEALTHY ? "green" : 
                              overallStatus.status === HEALTH_STATUS.WARNING ? "amber" : "red"}
-                      className="h-2 lg:h-3 shadow-sm"
+                      className="h-2 md:h-2.5 lg:h-3"
                     />
                   </div>
                 </div>
-
-                {/* Stats */}
-                <div className="col-span-1 p-4 lg:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="col-span-1 p-3 md:p-4 lg:p-6 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
                   <div className="text-center">
-                    <Typography variant="h4" className="lg:text-3xl font-bold text-green-700 mb-1">
+                    <Typography variant="h4" className="md:text-2xl lg:text-3xl font-bold text-green-600 mb-1">
                       {overallStatus.healthy}
                     </Typography>
-                    <Typography variant="small" className="text-green-800 font-semibold">
+                    <Typography variant="small" className="text-gray-600 font-semibold text-xs md:text-sm">
                       Healthy
                     </Typography>
                   </div>
                 </div>
                 
-                <div className="col-span-1 p-4 lg:p-6 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-xl border-2 border-amber-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="col-span-1 p-3 md:p-4 lg:p-6 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
                   <div className="text-center">
-                    <Typography variant="h4" className="lg:text-3xl font-bold text-amber-700 mb-1">
+                    <Typography variant="h4" className="md:text-2xl lg:text-3xl font-bold text-amber-600 mb-1">
                       {overallStatus.warning}
                     </Typography>
-                    <Typography variant="small" className="text-amber-800 font-semibold">
+                    <Typography variant="small" className="text-gray-600 font-semibold text-xs md:text-sm">
                       Warning
                     </Typography>
                   </div>
                 </div>
                 
-                <div className="col-span-1 p-4 lg:p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border-2 border-red-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="col-span-1 p-3 md:p-4 lg:p-6 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
                   <div className="text-center">
-                    <Typography variant="h4" className="lg:text-3xl font-bold text-red-700 mb-1">
+                    <Typography variant="h4" className="md:text-2xl lg:text-3xl font-bold text-red-600 mb-1">
                       {overallStatus.down}
                     </Typography>
-                    <Typography variant="small" className="text-red-800 font-semibold">
+                    <Typography variant="small" className="text-gray-600 font-semibold text-xs md:text-sm">
                       Down
                     </Typography>
                   </div>
                 </div>
               </div>
 
-              {/* Advanced Metrics Row */}
               {healthResults.length > 0 && healthResults[0].metrics && (
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-                  {/* Average Uptime */}
-                  <div className="p-3 lg:p-4 bg-blue-50 rounded-lg border border-blue-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-blue-700 font-bold text-lg">
+                <div className="mt-4 md:mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-3 md:gap-4">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {Math.round(healthResults.reduce((acc, result) => acc + (result.metrics?.uptime || 0), 0) / healthResults.length)}%
                     </Typography>
-                    <Typography variant="small" className="text-blue-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       Avg Uptime
                     </Typography>
                   </div>
 
-                  {/* Average Response Time */}
-                  <div className="p-3 lg:p-4 bg-indigo-50 rounded-lg border border-indigo-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-indigo-700 font-bold text-lg">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {Math.round(healthResults.reduce((acc, result) => acc + result.responseTime, 0) / healthResults.length)}ms
                     </Typography>
-                    <Typography variant="small" className="text-indigo-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       Avg Latency
                     </Typography>
                   </div>
 
-                  {/* P99 Latency */}
-                  <div className="p-3 lg:p-4 bg-purple-50 rounded-lg border border-purple-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-purple-700 font-bold text-lg">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {Math.round(healthResults.reduce((acc, result) => acc + (result.metrics?.latencyP99 || result.responseTime), 0) / healthResults.length)}ms
                     </Typography>
-                    <Typography variant="small" className="text-purple-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       P99 Latency
                     </Typography>
                   </div>
 
-                  {/* SSL Certificates */}
-                  <div className="p-3 lg:p-4 bg-green-50 rounded-lg border border-green-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-green-700 font-bold text-lg">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {healthResults.filter(result => result.metrics?.sslExpiry).length}
                     </Typography>
-                    <Typography variant="small" className="text-green-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       SSL Certs
                     </Typography>
                   </div>
 
-                  {/* Total Redirects */}
-                  <div className="p-3 lg:p-4 bg-orange-50 rounded-lg border border-orange-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-orange-700 font-bold text-lg">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {healthResults.reduce((acc, result) => acc + (result.metrics?.redirectChain || 0), 0)}
                     </Typography>
-                    <Typography variant="small" className="text-orange-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       Redirects
                     </Typography>
                   </div>
 
-                  {/* Total Payload */}
-                  <div className="p-3 lg:p-4 bg-teal-50 rounded-lg border border-teal-200 text-center hover:shadow-md transition-shadow">
-                    <Typography variant="small" className="text-teal-700 font-bold text-lg">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow">
+                    <Typography variant="small" className="text-gray-700 font-bold text-sm md:text-lg">
                       {Math.round(healthResults.reduce((acc, result) => acc + (result.metrics?.payloadSize || 0), 0) / 1024)}KB
                     </Typography>
-                    <Typography variant="small" className="text-teal-600 text-xs">
+                    <Typography variant="small" className="text-gray-500 text-xs">
                       Total Size
                     </Typography>
                   </div>
@@ -299,13 +373,12 @@ export function HealthCheckDashboard() {
             </>
           )}
 
-          {/* Last check info */}
           {lastCheck && (
-            <div className="mt-4 lg:mt-6 p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-md">
+            <div className="mt-4 md:mt-5 lg:mt-6 p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                <div className="flex items-center space-x-2 lg:space-x-3">
-                  <ClockIcon className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
-                  <Typography variant="small" className="text-blue-800 font-medium">
+                <div className="flex items-center space-x-2 md:space-x-3">
+                  <ClockIcon className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
+                  <Typography variant="small" className="text-gray-600 font-medium text-xs md:text-sm">
                     Last checked at: {formatTimestamp(lastCheck)}
                   </Typography>
                 </div>
@@ -314,7 +387,7 @@ export function HealthCheckDashboard() {
                     variant="gradient"
                     color="blue"
                     value="Auto-refresh: 30s"
-                    className="py-1 px-2 lg:px-3 text-xs font-medium shadow-md w-fit"
+                    className="py-1 px-2 md:px-3 text-xs font-medium w-fit"
                   />
                 )}
               </div>
@@ -323,8 +396,7 @@ export function HealthCheckDashboard() {
         </CardBody>
       </Card>
 
-      {/* Health Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
         {healthResults.length > 0 ? (
           healthResults.map((result, index) => (
             <HealthCard
@@ -335,7 +407,6 @@ export function HealthCheckDashboard() {
             />
           ))
         ) : (
-          // Loading skeletons
           Array.from({ length: 5 }).map((_, index) => (
             <HealthCard
               key={index}
@@ -347,17 +418,16 @@ export function HealthCheckDashboard() {
         )}
       </div>
 
-      {/* Loading overlay */}
       {isLoading && healthResults.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 lg:p-8 mx-4">
+          <Card className="p-4 md:p-6 lg:p-8 mx-4">
             <div className="flex items-center space-x-4">
-              <ArrowPathIcon className="h-8 w-8 text-blue-600 animate-spin" />
+              <ArrowPathIcon className="h-6 w-6 md:h-8 md:w-8 text-blue-600 animate-spin" />
               <div>
-                <Typography variant="h6" className="font-bold text-gray-900">
+                <Typography variant="h6" className="font-bold text-gray-900 text-sm md:text-base">
                   Checking Endpoints
                 </Typography>
-                <Typography variant="small" className="text-gray-600">
+                <Typography variant="small" className="text-gray-600 text-xs md:text-sm">
                   Analyzing performance metrics...
                 </Typography>
               </div>
@@ -366,21 +436,36 @@ export function HealthCheckDashboard() {
         </div>
       )}
 
-      {/* Enhanced Help Text */}
-      <Card className="p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-blue-50 border-2 border-blue-100 shadow-md">
-        <Typography variant="small" className="text-gray-700 text-center leading-relaxed">
-          💡 <strong className="text-blue-700">Health Status Guide:</strong> 
-          <span className="mx-1 lg:mx-2">❤️ <strong className="text-green-700">Healthy</strong> (&lt;500ms)</span> | 
-          <span className="mx-1 lg:mx-2">💛 <strong className="text-amber-700">Warning</strong> (500-2000ms)</span> | 
-          <span className="mx-1 lg:mx-2">💔 <strong className="text-red-700">Down</strong> (&gt;2000ms or error)</span>
+      {/* Health Statistics */}
+      {userSites.length > 0 && (
+        <HealthStatistics refreshTrigger={statsRefreshTrigger} />
+      )}
+
+      <Card className="p-4 md:p-5 lg:p-6 bg-gray-50 border border-gray-200">
+        <Typography variant="small" className="text-gray-600 text-center leading-relaxed text-xs md:text-sm">
+          <strong className="text-gray-700">Health Status Guide:</strong> 
+          <span className="mx-1 md:mx-2"><strong className="text-green-600">Healthy</strong> (&lt;500ms)</span> | 
+          <span className="mx-1 md:mx-2"><strong className="text-amber-600">Warning</strong> (500-2000ms)</span> | 
+          <span className="mx-1 md:mx-2"><strong className="text-red-600">Down</strong> (&gt;2000ms or error)</span>
           <br className="hidden sm:block" />
-          <span className="text-blue-600 font-medium">
-            📊 <strong>Advanced Metrics:</strong> Uptime %, Stability Index, P50/P90/P99 Latency, SSL Expiry, Payload Size, TTFB, Redirect Chain
+          <span className="text-gray-600 font-medium">
+            <strong>Advanced Metrics:</strong> Uptime %, Stability Index, P50/P90/P99 Latency, SSL Expiry, Payload Size, TTFB, Redirect Chain
           </span>
-          <br className="hidden sm:block" />
-          <span className="text-blue-600 font-medium">Auto-refresh every 30 seconds. Hover cards for detailed metrics and trend charts.</span>
+          <br className="hidden md:block" />
+          <span className="text-gray-600 font-medium">Auto-refresh every 30 seconds. Hover cards for detailed metrics and trend charts.</span>
         </Typography>
       </Card>
+
+      {/* Site Manager Modal */}
+      {showSiteManager && (
+        <div className="mt-8">
+          <SiteManager 
+            userSites={userSites}
+            onSitesUpdated={handleSitesUpdated}
+            onClose={() => setShowSiteManager(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

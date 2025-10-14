@@ -3,6 +3,20 @@
  * Dịch vụ kiểm tra tình trạng hoạt động của các endpoint
  */
 
+/**
+ * Trích xuất tên domain từ URL
+ * @param {string} url - URL để trích xuất domain
+ * @returns {string} Tên domain
+ */
+const extractDomainName = (url) => {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname.replace('www.', '');
+  } catch (error) {
+    return url;
+  }
+};
+
 // Danh sách endpoint cần kiểm tra
 export const ENDPOINTS = [
   {
@@ -259,11 +273,22 @@ export const checkEndpointHealth = async (endpoint) => {
 
 /**
  * Kiểm tra health của tất cả endpoint
+ * @param {Array<string>} customUrls - Danh sách URLs tùy chỉnh (optional)
  * @returns {Promise<Array>} Danh sách kết quả health check
  */
-export const checkAllEndpoints = async () => {
+export const checkAllEndpoints = async (customUrls = null) => {
+  // Sử dụng customUrls nếu được cung cấp, nếu không dùng ENDPOINTS mặc định
+  const endpointsToCheck = customUrls 
+    ? customUrls.map((url, index) => ({
+        id: `custom-${index}`,
+        name: extractDomainName(url),
+        url: url,
+        description: `Custom endpoint: ${url}`
+      }))
+    : ENDPOINTS;
+    
   const results = await Promise.allSettled(
-    ENDPOINTS.map(endpoint => checkEndpointHealth(endpoint))
+    endpointsToCheck.map(endpoint => checkEndpointHealth(endpoint))
   );
 
   return results.map((result, index) => {
@@ -272,9 +297,9 @@ export const checkAllEndpoints = async () => {
     } else {
       // Nếu Promise bị rejected
       return {
-        id: ENDPOINTS[index].id,
-        name: ENDPOINTS[index].name,
-        url: ENDPOINTS[index].url,
+        id: endpointsToCheck[index].id,
+        name: endpointsToCheck[index].name,
+        url: endpointsToCheck[index].url,
         status: HEALTH_STATUS.DOWN,
         responseTime: 0,
         timestamp: new Date().toISOString(),

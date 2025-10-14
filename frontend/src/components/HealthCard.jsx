@@ -18,17 +18,10 @@ import {
 } from "@heroicons/react/24/solid";
 import { getStatusColor, HEALTH_STATUS, formatTimestamp } from '@/services/healthCheckService';
 
-/**
- * Component hiển thị trạng thái health của một endpoint
- * @param {object} healthData - Dữ liệu health check
- * @param {boolean} isLoading - Đang kiểm tra hay không
- * @param {Array} healthHistory - Lịch sử health check cho trend chart
- */
 export function HealthCard({ healthData, isLoading = false, healthHistory = [] }) {
   const [animate, setAnimate] = useState(false);
   const statusConfig = getStatusColor(healthData?.status || HEALTH_STATUS.DOWN);
 
-  // Animation heartbeat cho trạng thái healthy
   useEffect(() => {
     if (healthData?.status === HEALTH_STATUS.HEALTHY) {
       setAnimate(true);
@@ -41,25 +34,23 @@ export function HealthCard({ healthData, isLoading = false, healthHistory = [] }
     }
   }, [healthData?.status]);
 
-  // Lấy icon theo trạng thái
   const getStatusIcon = (status) => {
-    const iconProps = { className: "h-5 w-5" };
+    const iconProps = { className: "h-4 w-4 md:h-5 md:w-5" };
     
     switch (status) {
       case HEALTH_STATUS.HEALTHY:
-        return <CheckCircleIcon {...iconProps} className={`h-5 w-5 text-green-600 ${animate ? 'animate-pulse' : ''}`} />;
+        return <CheckCircleIcon {...iconProps} className={`h-4 w-4 md:h-5 md:w-5 text-green-600 ${animate ? 'animate-pulse' : ''}`} />;
       case HEALTH_STATUS.WARNING:
-        return <ExclamationTriangleIcon {...iconProps} className="h-5 w-5 text-amber-600" />;
+        return <ExclamationTriangleIcon {...iconProps} className="h-4 w-4 md:h-5 md:w-5 text-amber-600" />;
       case HEALTH_STATUS.DOWN:
-        return <XCircleIcon {...iconProps} className="h-5 w-5 text-red-600" />;
+        return <XCircleIcon {...iconProps} className="h-4 w-4 md:h-5 md:w-5 text-red-600" />;
       case HEALTH_STATUS.CHECKING:
-        return <ArrowPathIcon {...iconProps} className="h-5 w-5 text-blue-600 animate-spin" />;
+        return <ArrowPathIcon {...iconProps} className="h-4 w-4 md:h-5 md:w-5 text-blue-600 animate-spin" />;
       default:
-        return <XCircleIcon {...iconProps} className="h-5 w-5 text-gray-600" />;
+        return <XCircleIcon {...iconProps} className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />;
     }
   };
 
-  // Lấy text trạng thái
   const getStatusText = (status) => {
     switch (status) {
       case HEALTH_STATUS.HEALTHY:
@@ -75,26 +66,25 @@ export function HealthCard({ healthData, isLoading = false, healthHistory = [] }
     }
   };
 
-  // Hiển thị loading state
   if (isLoading || !healthData) {
     return (
       <Card className="health-card shadow-md">
-        <CardBody className="p-6">
+        <CardBody className="p-4 md:p-5 lg:p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-lg animate-shimmer"></div>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-200 rounded-lg animate-shimmer"></div>
               <div>
-                <div className="w-24 h-4 bg-gray-200 rounded animate-shimmer mb-2"></div>
-                <div className="w-32 h-3 bg-gray-200 rounded animate-shimmer"></div>
+                <div className="w-20 md:w-24 h-3 md:h-4 bg-gray-200 rounded animate-shimmer mb-2"></div>
+                <div className="w-24 md:w-32 h-2 md:h-3 bg-gray-200 rounded animate-shimmer"></div>
               </div>
             </div>
             <div className="text-right">
-              <div className="w-16 h-6 bg-gray-200 rounded animate-shimmer mb-2"></div>
-              <div className="w-20 h-3 bg-gray-200 rounded animate-shimmer"></div>
+              <div className="w-12 md:w-16 h-5 md:h-6 bg-gray-200 rounded animate-shimmer mb-2"></div>
+              <div className="w-16 md:w-20 h-2 md:h-3 bg-gray-200 rounded animate-shimmer"></div>
             </div>
           </div>
           <div className="mt-4">
-            <div className="w-full h-3 bg-gray-200 rounded animate-shimmer"></div>
+            <div className="w-full h-2 md:h-3 bg-gray-200 rounded animate-shimmer"></div>
           </div>
         </CardBody>
       </Card>
@@ -121,46 +111,40 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
         healthData.status === HEALTH_STATUS.WARNING ? 'status-warning' : 
         healthData.status === HEALTH_STATUS.DOWN ? 'status-down' : ''
       }`}>
-        <CardBody className="p-6">
+        <CardBody className="p-4 md:p-5 lg:p-6">
           <div className="flex items-center justify-between">
             {/* Thông tin endpoint */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
               {/* Icon và emoji */}
-              <div className={`w-12 h-12 rounded-lg ${statusConfig.bgColor} flex items-center justify-center relative overflow-hidden`}>
-                <span className={`text-2xl ${animate ? 'animate-heartbeat' : ''}`}>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg ${statusConfig.bgColor} flex items-center justify-center relative overflow-hidden`}>
+                <span className={`text-lg md:text-2xl ${animate ? 'animate-heartbeat' : ''}`}>
                   {statusConfig.icon}
                 </span>
-                {healthData.status === HEALTH_STATUS.HEALTHY && (
-                  <div className="absolute inset-0 rounded-lg bg-green-200 animate-pulse-ring"></div>
-                )}
               </div>
 
-              {/* Tên và URL */}
-              <div>
-                <Typography variant="h6" color="blue-gray" className="font-bold mb-1">
+              <div className="min-w-0 flex-1">
+                <Typography variant="h6" color="blue-gray" className="font-bold mb-1 text-sm md:text-base lg:text-lg">
                   {healthData.name}
                 </Typography>
-                <Typography variant="small" className="text-gray-600 truncate max-w-xs">
+                <Typography variant="small" className="text-gray-600 truncate text-xs md:text-sm">
                   {healthData.url}
                 </Typography>
               </div>
             </div>
 
-            {/* Trạng thái và thời gian phản hồi */}
-            <div className="text-right">
-              <div className="flex items-center space-x-2 mb-2">
+            <div className="text-right flex-shrink-0">
+              <div className="flex items-center space-x-1 md:space-x-2 mb-2">
                 {getStatusIcon(healthData.status)}
                 <Chip
                   variant="ghost"
                   color={statusConfig.color}
                   value={getStatusText(healthData.status)}
-                  className="py-0.5 px-3 text-xs font-medium"
+                  className="py-0.5 px-2 md:px-3 text-xs font-medium"
                 />
               </div>
 
-              {/* Thời gian phản hồi */}
               <div className="flex flex-col items-end">
-                <Typography variant="small" className="font-semibold text-blue-gray-600">
+                <Typography variant="small" className="font-semibold text-blue-gray-600 text-xs md:text-sm">
                   {healthData.responseTime}ms
                 </Typography>
                 <Typography variant="small" className="text-gray-500 text-xs">
@@ -170,25 +154,22 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
             </div>
           </div>
 
-          {/* Advanced Metrics */}
           {healthData.metrics && (
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {/* Uptime */}
-              <div className="text-center p-2 bg-blue-50 rounded-lg">
-                <Typography variant="small" className="text-blue-700 font-bold">
+            <div className="mt-3 md:mt-4 grid grid-cols-2 gap-2 md:gap-3">
+              <div className="text-center p-2 bg-gray-50 rounded-lg">
+                <Typography variant="small" className="text-gray-700 font-bold text-xs md:text-sm">
                   {healthData.metrics.uptime}%
                 </Typography>
-                <Typography variant="small" className="text-blue-600 text-xs">
+                <Typography variant="small" className="text-gray-500 text-xs">
                   Uptime
                 </Typography>
               </div>
 
-              {/* Stability Index */}
-              <div className="text-center p-2 bg-purple-50 rounded-lg">
-                <Typography variant="small" className="text-purple-700 font-bold">
+              <div className="text-center p-2 bg-gray-50 rounded-lg">
+                <Typography variant="small" className="text-gray-700 font-bold text-xs md:text-sm">
                   {healthData.metrics.stabilityIndex}
                 </Typography>
-                <Typography variant="small" className="text-purple-600 text-xs">
+                <Typography variant="small" className="text-gray-500 text-xs">
                   Stability
                 </Typography>
               </div>
@@ -197,46 +178,46 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
 
           {/* Latency bars */}
           {healthData.metrics && (
-            <div className="mt-4">
+            <div className="mt-3 md:mt-4">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Latency Distribution</span>
-                <span>P50/P90/P99</span>
+                <span className="hidden md:inline">P50/P90/P99</span>
               </div>
               <div className="space-y-1">
                 {/* P50 */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs w-8 text-gray-500">P50</span>
+                  <span className="text-xs w-6 md:w-8 text-gray-500">P50</span>
                   <div className="flex-1 bg-gray-200 rounded-full h-1">
                     <div 
                       className="bg-green-500 h-1 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min((healthData.metrics.latencyP50 / 1000) * 100, 100)}%` }}
                     ></div>
                   </div>
-                  <span className="text-xs text-gray-600 w-12">{healthData.metrics.latencyP50}ms</span>
+                  <span className="text-xs text-gray-600 w-10 md:w-12 text-right">{healthData.metrics.latencyP50}ms</span>
                 </div>
                 
                 {/* P90 */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs w-8 text-gray-500">P90</span>
+                  <span className="text-xs w-6 md:w-8 text-gray-500">P90</span>
                   <div className="flex-1 bg-gray-200 rounded-full h-1">
                     <div 
                       className="bg-amber-500 h-1 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min((healthData.metrics.latencyP90 / 1000) * 100, 100)}%` }}
                     ></div>
                   </div>
-                  <span className="text-xs text-gray-600 w-12">{healthData.metrics.latencyP90}ms</span>
+                  <span className="text-xs text-gray-600 w-10 md:w-12 text-right">{healthData.metrics.latencyP90}ms</span>
                 </div>
                 
                 {/* P99 */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs w-8 text-gray-500">P99</span>
+                  <span className="text-xs w-6 md:w-8 text-gray-500">P99</span>
                   <div className="flex-1 bg-gray-200 rounded-full h-1">
                     <div 
                       className="bg-red-500 h-1 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min((healthData.metrics.latencyP99 / 1000) * 100, 100)}%` }}
                     ></div>
                   </div>
-                  <span className="text-xs text-gray-600 w-12">{healthData.metrics.latencyP99}ms</span>
+                  <span className="text-xs text-gray-600 w-10 md:w-12 text-right">{healthData.metrics.latencyP99}ms</span>
                 </div>
               </div>
             </div>
@@ -244,8 +225,8 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
 
           {/* SSL Certificate & Security */}
           {healthData.metrics?.sslExpiry && (
-            <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded flex items-center space-x-2">
-              <ShieldCheckIcon className="h-4 w-4 text-green-600" />
+            <div className="mt-2 md:mt-3 p-2 bg-green-50 border border-green-200 rounded flex items-center space-x-2">
+              <ShieldCheckIcon className="h-3 w-3 md:h-4 md:w-4 text-green-600 flex-shrink-0" />
               <Typography variant="small" className="text-green-700 text-xs">
                 SSL expires in {healthData.metrics.sslExpiry} days
               </Typography>
@@ -254,8 +235,8 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
 
           {/* Redirect Chain Warning */}
           {healthData.metrics?.redirectChain > 2 && (
-            <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded flex items-center space-x-2">
-              <ArrowPathIcon className="h-4 w-4 text-amber-600" />
+            <div className="mt-2 md:mt-3 p-2 bg-amber-50 border border-amber-200 rounded flex items-center space-x-2">
+              <ArrowPathIcon className="h-3 w-3 md:h-4 md:w-4 text-amber-600 flex-shrink-0" />
               <Typography variant="small" className="text-amber-700 text-xs">
                 {healthData.metrics.redirectChain} redirects detected
               </Typography>
@@ -264,8 +245,8 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
 
           {/* Error message */}
           {healthData.error && (
-            <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
-              <Typography variant="small" className="text-red-700 text-xs">
+            <div className="mt-2 md:mt-3 p-2 bg-red-50 border border-red-200 rounded">
+              <Typography variant="small" className="text-red-700 text-xs break-words">
                 Error: {healthData.error}
               </Typography>
             </div>
@@ -273,14 +254,14 @@ ${healthData.metrics.redirectChain > 0 ? `• Redirects: ${healthData.metrics.re
 
           {/* Mini Trend Chart */}
           {healthHistory.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-3 md:mt-4">
               <div className="flex items-center space-x-2 mb-2">
-                <ChartBarIcon className="h-4 w-4 text-gray-500" />
+                <ChartBarIcon className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                 <Typography variant="small" className="text-gray-600 text-xs">
                   Response Time Trend
                 </Typography>
               </div>
-              <div className="h-8 flex items-end space-x-1">
+              <div className="h-6 md:h-8 flex items-end space-x-1">
                 {healthHistory
                   .filter(h => h.id === healthData.id)
                   .slice(-10)

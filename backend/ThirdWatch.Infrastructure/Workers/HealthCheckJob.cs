@@ -11,6 +11,7 @@ namespace ThirdWatch.Infrastructure.Workers;
 public class HealthCheckJob(
     IServiceScopeFactory scopeFactory,
     IOptions<HealthCheckOptions> options,
+    IEventPublisher eventPublisher,
     ILogger<HealthCheckJob> logger)
     : BackgroundService
 {
@@ -36,6 +37,7 @@ public class HealthCheckJob(
                 if (sitesToCheck.Any())
                 {
                     logger.LogInformation("Found {Count} sites to check at minute {Minute}.", sitesToCheck.Count(), currentMinute);
+
                     await healthCheckService.ExecuteBatchChecksAsync(sitesToCheck, stoppingToken);
                 }
             }
