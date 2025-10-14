@@ -44,7 +44,7 @@ public interface ISiteRepository : IRepository<Site>
         Guid siteId,
         LastStatus status,
         int responseTime,
-        IList<int> trendData,
+        IList<int> responseTrendData,
         decimal upTime,
         decimal stability,
         int p50,
@@ -53,5 +53,6 @@ public interface ISiteRepository : IRepository<Site>
         int p99,
         int sslExpiresInDays,
         HealthStatus healthStatus,
+        DateTime lastCheckedAt,
         CancellationToken cancellationToken = default);
 }

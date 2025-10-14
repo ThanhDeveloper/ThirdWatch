@@ -1,14 +1,13 @@
 using MassTransit;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ThirdWatch.Application.Services.Interfaces;
 using ThirdWatch.Domain.Events;
-using ThirdWatch.Domain.Interfaces;
 
 namespace ThirdWatch.Infrastructure.Consumers;
 
 
-public class HealthCheckConsumer(
-    IUnitOfWork unitOfWork,
+public sealed class HealthCheckConsumer(
+    IHealthCheckService healthCheckService,
     ILogger<HealthCheckConsumer> logger) : BaseConsumer<HealthCheckEvent>(logger)
 {
     protected override async Task ConsumeMessage(ConsumeContext<HealthCheckEvent> context)
@@ -16,21 +15,10 @@ public class HealthCheckConsumer(
         var currentTime = DateTime.UtcNow;
         var message = context.Message;
 
-        logger.LogInformation("HealthCheckEvent received for correlationId: {CorrelationId} with total {Total} sites", message.CorrelationId, message.SiteIds.Count);
+        logger.LogInformation("Starting processing HealthCheckEvent for correlationId: {CorrelationId} and siteId: {SiteId}", message.CorrelationId, message.SiteId);
 
-        var sitesToUpdate = await unitOfWork.Sites
-            .Query()
-            .Where(site => message.SiteIds.Contains(site.Id))
-            .ToListAsync();
+        await healthCheckService.CheckSingleSiteAsync(message.SiteId, message.Url, message.LastCheckedAt, context.CancellationToken);
 
-        foreach (var site in sitesToUpdate)
-        {
-            site.LastCheckedAt = currentTime;
-            //to do handle update metrics
-        }
-
-        await unitOfWork.SaveChangesAsync();
-
-        logger.LogInformation("HealthCheckEvent processed successfully for correlationId: {CorrelationId}", message.CorrelationId);
+        logger.LogInformation("HealthCheckEvent processed successfully for correlationId: {CorrelationId} and siteId: {SiteId}", message.CorrelationId, message.SiteId);
     }
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ThirdWatch.Application.Services.Interfaces;
@@ -20,49 +21,31 @@ public class HealthCheckService(
     ISiteRepository repository,
     IOptions<HealthCheckOptions> options,
     ICacheService cacheService,
-    ILogger<HealthCheckService> logger) : IHealthCheckService, IDisposable
+    ILogger<HealthCheckService> logger) : IHealthCheckService
 {
-    private bool _disposed;
-
-    // [PERFORMANCE] SemaphoreSlim to limit concurrent requests and avoid overload.
-    private readonly SemaphoreSlim _semaphore = new(options.Value.MaxConcurrentChecks);
-    private const string LatencyHistoryKeyPrefix = "LatencyHistory:";
     private const string UptimeTotalChecksKeyPrefix = "Uptime:Total:";
     private const string UptimeUpChecksKeyPrefix = "Uptime:Up:";
     private const string FailureKeyPrefix = "FailureCount:";
-
-    /// <summary>
-    /// Performs batch health checks for multiple sites with concurrency control.
-    /// </summary>
-    public async Task ExecuteBatchChecksAsync(IEnumerable<Site> sites, CancellationToken cancellationToken)
-    {
-        var checkTasks = sites.Select(site => PerformCheckWithSemaphoreAsync(site, cancellationToken));
-        await Task.WhenAll(checkTasks);
-    }
+    private const string SslCacheKeyPrefix = "SSLCheck:";
 
     /// <summary>
     /// Perform check for a single site without semaphore. Used for on-demand checks.
     /// </summary>
-    public async Task CheckSingleSiteAsync(Site site, CancellationToken cancellationToken)
+    public async Task CheckSingleSiteAsync(Guid siteId, string url, DateTime lastCheckedAt, CancellationToken cancellationToken)
     {
-        await PerformCheckAndUpdateMetricsAsync(site, cancellationToken);
+        await PerformCheckAndUpdateMetricsAsync(siteId, url, lastCheckedAt, cancellationToken);
     }
 
-    private async Task PerformCheckWithSemaphoreAsync(Site site, CancellationToken cancellationToken)
+    private async Task PerformCheckAndUpdateMetricsAsync(Guid siteId, string url, DateTime lastCheckedAt, CancellationToken cancellationToken)
     {
-        await _semaphore.WaitAsync(cancellationToken);
-        try
-        {
-            await PerformCheckAndUpdateMetricsAsync(site, cancellationToken);
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
-    }
+        string sslCacheKey = SslCacheKeyPrefix + siteId;
+        var responseTrendData = await repository
+            .Query()
+            .AsNoTracking()
+            .Where(x => x.Id == siteId)
+            .Select(x => x.ResponseTrendData)
+            .FirstOrDefaultAsync(cancellationToken) ?? [];
 
-    private async Task PerformCheckAndUpdateMetricsAsync(Site site, CancellationToken cancellationToken)
-    {
         var httpClient = httpClientFactory.CreateClient("HealthCheckClient");
         var stopwatch = Stopwatch.StartNew();
         int responseTimeMs;
@@ -70,7 +53,8 @@ public class HealthCheckService(
 
         try
         {
-            var response = await httpClient.GetAsync(new Uri(site.Url), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            using var request = new HttpRequestMessage(HttpMethod.Head, new Uri(url));
+            var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             stopwatch.Stop();
             responseTimeMs = (int)stopwatch.ElapsedMilliseconds;
             status = response.IsSuccessStatusCode ? LastStatus.Up : LastStatus.Down;
@@ -80,35 +64,33 @@ public class HealthCheckService(
             stopwatch.Stop();
             responseTimeMs = (int)stopwatch.ElapsedMilliseconds;
             status = LastStatus.Error;
-            logger.LogWarning(ex, "Health check failed for site {SiteUrl}", site.Url);
+            logger.LogWarning(ex, "Health check failed for site {SiteUrl}", url);
         }
 
-        var latencyHistory = (await cacheService.GetAsync<List<int>>(LatencyHistoryKeyPrefix + site.Id, cancellationToken)) ?? [];
+        // collect latency history for percentiles
+        responseTrendData.Add(responseTimeMs);
+        if (responseTrendData.Count > options.Value.MaxTrendHistory)
+        {
+            responseTrendData.RemoveAt(0);
+        }
 
-        await AddCheckResultAndCalculateMetricsAsync(
-            site.Id,
-            responseTimeMs,
-            status,
-            latencyHistory,
-            options.Value.MaxTrendHistory,
-            cancellationToken);
+        decimal uptime = await CalculateUptimePercentageAsync(siteId, status, cancellationToken);
 
-        decimal uptime = await CalculateUptimePercentageAsync(site.Id, status, cancellationToken);
-
-        int failureCount = await GetConsecutiveFailureCountAsync(site.Id, cancellationToken);
+        int failureCount = await GetConsecutiveFailureCountAsync(siteId, cancellationToken);
         decimal stability = 100m - failureCount;
 
-        var (p50, p90, p95, p99) = CalculatePercentiles(latencyHistory);
+        var (p50, p90, p95, p99) = CalculatePercentiles(responseTrendData);
 
-        var (isSslValid, sslExpiresInDays) = await CheckSslAsync(site.Url);
+        var (isSslValid, sslExpiresInDays) = await cacheService.GetAsync<(bool IsValid, int ExpiresInDays)?>(sslCacheKey, cancellationToken)
+            ?? await CheckSslAsync(sslCacheKey, url);
 
         var finalHealthStatus = DetermineHealthStatus(status, uptime, stability, sslExpiresInDays);
 
         await repository.UpdateSiteMetricsAsync(
-            site.Id,
+            siteId,
             status,
             responseTimeMs,
-            latencyHistory, // Update ResponseTrendData with the same latency history
+            responseTrendData,
             uptime,
             stability,
             p50,
@@ -117,35 +99,14 @@ public class HealthCheckService(
             p99,
             sslExpiresInDays,
             finalHealthStatus,
+            lastCheckedAt,
             cancellationToken);
     }
 
-    public async Task AddCheckResultAndCalculateMetricsAsync(
-        Guid siteId,
-        int newResponseTimeMs,
-        LastStatus status,
-        IList<int> latencyHistory,
-        int maxTrendHistory,
-        CancellationToken cancellationToken)
+    public async Task<int> GetConsecutiveFailureCountAsync(Guid siteId, CancellationToken cancellationToken)
     {
-        // Manage latency history for trend and percentile calculation
-        latencyHistory.Add(newResponseTimeMs);
-        if (latencyHistory.Count > maxTrendHistory)
-        {
-            latencyHistory.RemoveAt(0);
-        }
-        await cacheService.SetAsync(LatencyHistoryKeyPrefix + siteId, latencyHistory, TimeSpan.FromDays(1), cancellationToken);
-
-        // Handle failure counter
-        int currentCount = await GetConsecutiveFailureCountAsync(siteId, cancellationToken);
-        if (status != LastStatus.Up)
-        {
-            await cacheService.SetAsync(FailureKeyPrefix + siteId, currentCount + 1, null, cancellationToken);
-        }
-        else
-        {
-            await cacheService.RemoveAsync(FailureKeyPrefix + siteId, cancellationToken);
-        }
+        int count = await cacheService.GetAsync<int>(FailureKeyPrefix + siteId, cancellationToken);
+        return count;
     }
 
     private async Task<decimal> CalculateUptimePercentageAsync(Guid siteId, LastStatus currentStatus, CancellationToken cancellationToken)
@@ -203,13 +164,7 @@ public class HealthCheckService(
         );
     }
 
-    public async Task<int> GetConsecutiveFailureCountAsync(Guid siteId, CancellationToken cancellationToken)
-    {
-        int count = await cacheService.GetAsync<int>(FailureKeyPrefix + siteId, cancellationToken);
-        return count;
-    }
-
-    public async Task<(bool IsValid, int ExpiresInDays)> CheckSslAsync(string url)
+    public async Task<(bool IsValid, int ExpiresInDays)> CheckSslAsync(string sslCacheKey, string url)
     {
         SslValidationResult validationResult = new();
 
@@ -280,6 +235,8 @@ public class HealthCheckService(
 
             bool isValid = isSslSecureAndTrusted && expiresInDays > 0 && !isNotYetValid;
 
+            await cacheService.SetAsync(sslCacheKey, (isValid, expiresInDays), TimeSpan.FromDays(1), CancellationToken.None);
+
             return (isValid, expiresInDays);
         }
         catch (HttpRequestException ex)
@@ -336,26 +293,5 @@ public class HealthCheckService(
         }
 
         return HealthStatus.Healthy;
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            _semaphore.Dispose();
-        }
-
-        _disposed = true;
     }
 }

@@ -21,7 +21,7 @@ public class SiteRepository(ApplicationDbContext context) : Repository<Site>(con
         Guid siteId,
         LastStatus status,
         int responseTime,
-        IList<int> trendData,
+        IList<int> responseTrendData,
         decimal upTime,
         decimal stability,
         int p50,
@@ -30,6 +30,7 @@ public class SiteRepository(ApplicationDbContext context) : Repository<Site>(con
         int p99,
         int sslExpiresInDays,
         HealthStatus healthStatus,
+        DateTime lastCheckedAt,
         CancellationToken cancellationToken = default)
     {
         return await DbSet
@@ -38,8 +39,8 @@ public class SiteRepository(ApplicationDbContext context) : Repository<Site>(con
                 .SetProperty(s => s.LastStatus, status)
                 .SetProperty(s => s.UptimePercentage, upTime)
                 .SetProperty(s => s.CurrentResponseTimeMs, responseTime)
-                .SetProperty(s => s.LastCheckedAt, DateTime.UtcNow)
-                .SetProperty(s => s.ResponseTrendData, trendData)
+                .SetProperty(s => s.LastCheckedAt, lastCheckedAt)
+                .SetProperty(s => s.ResponseTrendData, responseTrendData)
                 .SetProperty(s => s.StabilityPercentage, stability)
                 .SetProperty(s => s.P50ms, p50)
                 .SetProperty(s => s.P90ms, p90)

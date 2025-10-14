@@ -107,6 +107,8 @@ public static class DependencyInjection
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 
+                cfg.ConcurrentMessageLimit = 50;
+
                 cfg.UseMessageRetry(retryConfig =>
                 {
                     retryConfig.Incremental(
