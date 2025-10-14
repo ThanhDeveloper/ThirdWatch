@@ -94,16 +94,16 @@ public static class DependencyInjection
 
     private static IServiceCollection AddMassTransitServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var massTransitConfig = configuration.GetSection(ServiceBusConfiguration.SectionName).Get<ServiceBusConfiguration>()
-                              ?? throw new InvalidOperationException($"MassTransit configuration section '{ServiceBusConfiguration.SectionName}' is missing");
+        var massTransitConfig = configuration.GetSection(MessageBusConfiguration.SectionName).Get<MessageBusConfiguration>()
+                              ?? throw new InvalidOperationException($"MassTransit configuration section '{MessageBusConfiguration.SectionName}' is missing");
 
-        services.Configure<ServiceBusConfiguration>(configuration.GetSection(ServiceBusConfiguration.SectionName));
+        services.Configure<MessageBusConfiguration>(configuration.GetSection(MessageBusConfiguration.SectionName));
 
         services.AddMassTransit(configurator =>
         {
             configurator.AddConsumers(Assembly.GetExecutingAssembly());
 
-            configurator.UsingAzureServiceBus((context, cfg) =>
+            configurator.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 

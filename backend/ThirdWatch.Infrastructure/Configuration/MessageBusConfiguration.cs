@@ -1,6 +1,6 @@
 namespace ThirdWatch.Infrastructure.Configuration;
 
-public sealed class ServiceBusConfiguration
+public sealed class MessageBusConfiguration
 {
     public const string SectionName = "ServiceBus";
 

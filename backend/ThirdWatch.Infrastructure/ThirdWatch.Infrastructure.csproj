@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
   </ItemGroup>
   
   <ItemGroup>
