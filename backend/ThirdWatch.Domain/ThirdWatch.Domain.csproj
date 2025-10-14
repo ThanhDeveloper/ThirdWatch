@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
     <PackageReference Include="MassTransit" />
-    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" />
   </ItemGroup>
   

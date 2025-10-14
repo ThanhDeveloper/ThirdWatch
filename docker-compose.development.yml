@@ -22,6 +22,20 @@ services:
     networks:
       thirdwatch:
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: thirdwatch-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      thirdwatch:
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: thirdwatch-sqlserver
@@ -34,3 +48,8 @@ services:
       - sqlserver-data:/var/opt/mssql
     networks:
       thirdwatch:
+  
+volumes:
+  redis-data:
+  rabbitmq-data:
+  sqlserver-data:
