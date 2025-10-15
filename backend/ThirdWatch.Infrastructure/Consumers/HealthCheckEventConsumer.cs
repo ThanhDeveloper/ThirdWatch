@@ -6,9 +6,9 @@ using ThirdWatch.Domain.Events;
 namespace ThirdWatch.Infrastructure.Consumers;
 
 
-public sealed class HealthCheckConsumer(
+public sealed class HealthCheckEventConsumer(
     IHealthCheckService healthCheckService,
-    ILogger<HealthCheckConsumer> logger) : BaseConsumer<HealthCheckEvent>(logger)
+    ILogger<HealthCheckEventConsumer> logger) : BaseConsumer<HealthCheckEvent>(logger)
 {
     protected override async Task ConsumeMessage(ConsumeContext<HealthCheckEvent> context)
     {

@@ -33,22 +33,29 @@ public class SiteRepository(ApplicationDbContext context) : Repository<Site>(con
         DateTime lastCheckedAt,
         CancellationToken cancellationToken = default)
     {
-        return await DbSet
-            .Where(s => s.Id == siteId)
-            .ExecuteUpdateAsync(updates => updates
-                .SetProperty(s => s.LastStatus, status)
-                .SetProperty(s => s.UptimePercentage, upTime)
-                .SetProperty(s => s.CurrentResponseTimeMs, responseTime)
-                .SetProperty(s => s.LastCheckedAt, lastCheckedAt)
-                .SetProperty(s => s.ResponseTrendData, responseTrendData)
-                .SetProperty(s => s.StabilityPercentage, stability)
-                .SetProperty(s => s.P50ms, p50)
-                .SetProperty(s => s.P90ms, p90)
-                .SetProperty(s => s.P95ms, p95)
-                .SetProperty(s => s.P99ms, p99)
-                .SetProperty(s => s.SslExpiresInDays, sslExpiresInDays)
-                .SetProperty(s => s.HealthStatus, healthStatus)
-                .SetProperty(s => s.UpdatedAt, DateTimeOffset.Now)
-            , cancellationToken);
+        try
+        {
+            return await DbSet
+                .Where(s => s.Id == siteId)
+                .ExecuteUpdateAsync(updates => updates
+                    .SetProperty(s => s.LastStatus, status)
+                    .SetProperty(s => s.UptimePercentage, upTime)
+                    .SetProperty(s => s.CurrentResponseTimeMs, responseTime)
+                    .SetProperty(s => s.LastCheckedAt, lastCheckedAt)
+                    .SetProperty(s => s.ResponseTrendData, responseTrendData)
+                    .SetProperty(s => s.StabilityPercentage, stability)
+                    .SetProperty(s => s.P50ms, p50)
+                    .SetProperty(s => s.P90ms, p90)
+                    .SetProperty(s => s.P95ms, p95)
+                    .SetProperty(s => s.P99ms, p99)
+                    .SetProperty(s => s.SslExpiresInDays, sslExpiresInDays)
+                    .SetProperty(s => s.HealthStatus, healthStatus)
+                    .SetProperty(s => s.UpdatedAt, DateTimeOffset.Now)
+                , cancellationToken);
+        }
+        catch (ArgumentNullException)
+        {
+            return 0;
+        }
     }
 }

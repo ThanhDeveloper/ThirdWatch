@@ -23,6 +23,16 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0"
         }
       },
+      "MassTransit.EntityFrameworkCore": {
+        "type": "Direct",
+        "requested": "[8.2.0, )",
+        "resolved": "8.2.0",
+        "contentHash": "i5Bb01Xo5o7qDwlKF2fVXvWnFej1Bs21z2WB6NrQV3FfqZbgyhGkQ+Dd5xoe6cp4T8DOnkBcibSuxxOT1SlGxQ==",
+        "dependencies": {
+          "MassTransit": "8.2.0",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.0"
+        }
+      },
       "MassTransit.RabbitMQ": {
         "type": "Direct",
         "requested": "[8.2.0, )",
@@ -855,16 +865,6 @@
           "System.Diagnostics.DiagnosticSource": "8.0.0",
           "System.Text.Json": "8.0.0",
           "System.Threading.Channels": "8.0.0"
-        }
-      },
-      "MassTransit.EntityFrameworkCore": {
-        "type": "CentralTransitive",
-        "requested": "[8.2.0, )",
-        "resolved": "8.2.0",
-        "contentHash": "i5Bb01Xo5o7qDwlKF2fVXvWnFej1Bs21z2WB6NrQV3FfqZbgyhGkQ+Dd5xoe6cp4T8DOnkBcibSuxxOT1SlGxQ==",
-        "dependencies": {
-          "MassTransit": "8.2.0",
-          "Microsoft.EntityFrameworkCore.Relational": "8.0.0"
         }
       },
       "MediatR": {

@@ -107,7 +107,7 @@ public static class DependencyInjection
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 
-                cfg.ConcurrentMessageLimit = 50;
+                cfg.ConcurrentMessageLimit = 100;
 
                 cfg.UseMessageRetry(retryConfig =>
                 {
@@ -116,6 +116,8 @@ public static class DependencyInjection
                         TimeSpan.FromSeconds(1),
                         TimeSpan.FromSeconds(massTransitConfig.Consumer.RetryDelaySeconds));
                 });
+
+                cfg.UseDelayedMessageScheduler();
 
                 cfg.ConfigureEndpoints(context);
             });

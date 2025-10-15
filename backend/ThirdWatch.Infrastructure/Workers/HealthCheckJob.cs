@@ -42,6 +42,9 @@ public class HealthCheckJob(
 
                 await Task.WhenAll(tasks);
 
+                // We need it for outbox pattern
+                await unitOfWork.SaveChangesAsync(stoppingToken);
+
                 logger.LogInformation("HealthCheckJob completed processing {SiteCount} sites at: {Time}", sitesToCheck.Count(), DateTimeOffset.Now);
             }
 #pragma warning disable CA1031 // We allowed to catch general exception types

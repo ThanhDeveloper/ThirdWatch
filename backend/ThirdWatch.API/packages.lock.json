@@ -699,6 +699,7 @@
         "dependencies": {
           "Azure.Storage.Blobs": "[12.23.0, )",
           "EFCore.CheckConstraints": "[9.0.0, )",
+          "MassTransit.EntityFrameworkCore": "[8.2.0, )",
           "MassTransit.RabbitMQ": "[8.2.0, )",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "[9.0.0, )",
           "Microsoft.EntityFrameworkCore": "[9.0.0, )",
