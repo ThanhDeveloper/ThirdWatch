@@ -48,7 +48,8 @@ public static class DependencyInjection
     {
         services
             .AddHostedService<CleanUpDeletedWebhookHistoryFilesJob>()
-            .AddHostedService<HealthCheckJob>();
+            .AddHostedService<HealthCheckJob>()
+            .AddHostedService<HealthCheckSummaryJob>();
 
         return services;
     }
@@ -65,6 +66,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IHealthCheckService, HealthCheckService>();
+        services.AddSingleton<IMetricsBufferService, SiteMetricsBufferService>();
 
         return services;
     }
@@ -103,7 +105,7 @@ public static class DependencyInjection
         {
             configurator.AddConsumers(Assembly.GetExecutingAssembly());
 
-            configurator.UsingRabbitMq((context, cfg) =>
+            configurator.UsingAzureServiceBus((context, cfg) =>
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 

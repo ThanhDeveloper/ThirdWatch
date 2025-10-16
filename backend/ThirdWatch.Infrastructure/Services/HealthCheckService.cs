@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ThirdWatch.Application.Services.Interfaces;
-using ThirdWatch.Domain.Interfaces;
 using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.Infrastructure.Services;
@@ -18,7 +16,6 @@ public class SslValidationResult
 
 public class HealthCheckService(
     IHttpClientFactory httpClientFactory,
-    ISiteRepository repository,
     IOptions<HealthCheckOptions> options,
     ICacheService cacheService,
     ILogger<HealthCheckService> logger) : IHealthCheckService
@@ -31,20 +28,14 @@ public class HealthCheckService(
     /// <summary>
     /// Perform check for a single site without semaphore. Used for on-demand checks.
     /// </summary>
-    public async Task CheckSingleSiteAsync(Guid siteId, string url, DateTime lastCheckedAt, CancellationToken cancellationToken)
+    public async Task<Site?> CheckSingleSiteAsync(Site site, DateTime lastCheckedAt, CancellationToken cancellationToken)
     {
-        await PerformCheckAndUpdateMetricsAsync(siteId, url, lastCheckedAt, cancellationToken);
+        return await PerformCheckAndUpdateMetricsAsync(site, lastCheckedAt, cancellationToken);
     }
 
-    private async Task PerformCheckAndUpdateMetricsAsync(Guid siteId, string url, DateTime lastCheckedAt, CancellationToken cancellationToken)
+    private async Task<Site?> PerformCheckAndUpdateMetricsAsync(Site site, DateTime lastCheckedAt, CancellationToken cancellationToken)
     {
-        string sslCacheKey = SslCacheKeyPrefix + siteId;
-        var responseTrendData = await repository
-            .Query()
-            .AsNoTracking()
-            .Where(x => x.Id == siteId)
-            .Select(x => x.ResponseTrendData)
-            .FirstOrDefaultAsync(cancellationToken) ?? [];
+        string sslCacheKey = SslCacheKeyPrefix + site.Id;
 
         var httpClient = httpClientFactory.CreateClient("HealthCheckClient");
         var stopwatch = Stopwatch.StartNew();
@@ -53,7 +44,7 @@ public class HealthCheckService(
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Head, new Uri(url));
+            using var request = new HttpRequestMessage(HttpMethod.Head, new Uri(site.Url));
             var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             stopwatch.Stop();
             responseTimeMs = (int)stopwatch.ElapsedMilliseconds;
@@ -64,43 +55,42 @@ public class HealthCheckService(
             stopwatch.Stop();
             responseTimeMs = (int)stopwatch.ElapsedMilliseconds;
             status = LastStatus.Error;
-            logger.LogWarning(ex, "Health check failed for site {SiteUrl}", url);
+            logger.LogWarning(ex, "Health check failed for site {SiteUrl}", site.Url);
         }
 
         // collect latency history for percentiles
-        responseTrendData.Add(responseTimeMs);
-        if (responseTrendData.Count > options.Value.MaxTrendHistory)
+        site.ResponseTrendData.Add(responseTimeMs);
+        if (site.ResponseTrendData.Count > options.Value.MaxTrendHistory)
         {
-            responseTrendData.RemoveAt(0);
+            site.ResponseTrendData.RemoveAt(0);
         }
 
-        decimal uptime = await CalculateUptimePercentageAsync(siteId, status, cancellationToken);
+        decimal uptime = await CalculateUptimePercentageAsync(site.Id, status, cancellationToken);
 
-        int failureCount = await GetConsecutiveFailureCountAsync(siteId, cancellationToken);
+        int failureCount = await GetConsecutiveFailureCountAsync(site.Id, cancellationToken);
         decimal stability = 100m - failureCount;
 
-        var (p50, p90, p95, p99) = CalculatePercentiles(responseTrendData);
+        var (p50, p90, p95, p99) = CalculatePercentiles(site.ResponseTrendData);
 
         var (isSslValid, sslExpiresInDays) = await cacheService.GetAsync<(bool IsValid, int ExpiresInDays)?>(sslCacheKey, cancellationToken)
-            ?? await CheckSslAsync(sslCacheKey, url);
+            ?? await CheckSslAsync(sslCacheKey, site.Url);
 
         var finalHealthStatus = DetermineHealthStatus(status, uptime, stability, sslExpiresInDays);
 
-        await repository.UpdateSiteMetricsAsync(
-            siteId,
-            status,
-            responseTimeMs,
-            responseTrendData,
-            uptime,
-            stability,
-            p50,
-            p90,
-            p95,
-            p99,
-            sslExpiresInDays,
-            finalHealthStatus,
-            lastCheckedAt,
-            cancellationToken);
+        site.P50ms = p50;
+        site.P90ms = p90;
+        site.P95ms = p95;
+        site.P99ms = p99;
+        site.CurrentResponseTimeMs = responseTimeMs;
+        site.LastStatus = status;
+        site.UptimePercentage = uptime;
+        site.StabilityPercentage = stability;
+        site.SslExpiresInDays = sslExpiresInDays;
+        site.HealthStatus = finalHealthStatus;
+        site.LastCheckedAt = lastCheckedAt;
+        site.IsSslValid = isSslValid;
+
+        return site;
     }
 
     public async Task<int> GetConsecutiveFailureCountAsync(Guid siteId, CancellationToken cancellationToken)
@@ -235,7 +225,9 @@ public class HealthCheckService(
 
             bool isValid = isSslSecureAndTrusted && expiresInDays > 0 && !isNotYetValid;
 
-            await cacheService.SetAsync(sslCacheKey, (isValid, expiresInDays), TimeSpan.FromDays(1), CancellationToken.None);
+            int cacheExpirationTime = expiresInDays < 3 ? 1 : expiresInDays - 3;
+
+            await cacheService.SetAsync(sslCacheKey, (isValid, expiresInDays), TimeSpan.FromDays(cacheExpirationTime), CancellationToken.None);
 
             return (isValid, expiresInDays);
         }

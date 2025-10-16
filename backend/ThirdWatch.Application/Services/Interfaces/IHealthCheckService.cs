@@ -2,5 +2,5 @@ namespace ThirdWatch.Application.Services.Interfaces;
 
 public interface IHealthCheckService
 {
-    Task CheckSingleSiteAsync(Guid siteId, string url, DateTime lastCheckedAt, CancellationToken cancellationToken);
+    Task<Site?> CheckSingleSiteAsync(Site site, DateTime lastCheckedAt, CancellationToken cancellationToken);
 }

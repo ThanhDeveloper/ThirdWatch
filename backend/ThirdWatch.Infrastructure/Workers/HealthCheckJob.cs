@@ -3,14 +3,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ThirdWatch.Application.Services.Interfaces;
-using ThirdWatch.Domain.Events;
 using ThirdWatch.Domain.Interfaces;
+using ThirdWatch.Infrastructure.Services;
 using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.Infrastructure.Workers;
 
 public class HealthCheckJob(
     IServiceScopeFactory scopeFactory,
+    IMetricsBufferService metricsBufferService,
     IOptions<HealthCheckOptions> options,
     ILogger<HealthCheckJob> logger)
     : BackgroundService
@@ -29,6 +30,9 @@ public class HealthCheckJob(
 
                 int currentMinute = DateTime.UtcNow.Minute;
                 var currentTime = DateTime.UtcNow;
+                string correlationId = Guid.NewGuid().ToString();
+                const int MaxConcurrency = 200;
+                using var semaphore = new SemaphoreSlim(MaxConcurrency);
 
                 await using var asyncScope = scopeFactory.CreateAsyncScope();
                 var unitOfWork = asyncScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -37,13 +41,23 @@ public class HealthCheckJob(
 
                 var sitesToCheck = await unitOfWork.Sites.GetSitesDueForCheckAsync(currentMinute, stoppingToken);
 
-                var tasks = sitesToCheck.Select(site =>
-                    eventPublisher.PublishAsync(new HealthCheckEvent(site.Id, site.Url, currentTime, Guid.NewGuid().ToString()), stoppingToken));
+                var allTasks = sitesToCheck.Select(async site =>
+                {
+                    await semaphore.WaitAsync(stoppingToken);
 
-                await Task.WhenAll(tasks);
+                    try
+                    {
+                        await healthCheckService.CheckSingleSiteAsync(site, currentTime, stoppingToken);
 
-                // We need it for outbox pattern
-                await unitOfWork.SaveChangesAsync(stoppingToken);
+                        metricsBufferService.AddMetricToBuffer(key: correlationId, site);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                });
+
+                await Task.WhenAll(allTasks);
 
                 logger.LogInformation("HealthCheckJob completed processing {SiteCount} sites at: {Time}", sitesToCheck.Count(), DateTimeOffset.Now);
             }
