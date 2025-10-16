@@ -35,3 +35,24 @@ public interface INotificationRepository : IRepository<Notification>
     Task<bool> MarkNotificationAsReadAsync(Guid userId, Guid notificationId, CancellationToken cancellationToken = default);
     Task<bool> DeleteNotificationAsync(Guid userId, Guid notificationId, CancellationToken cancellationToken = default);
 }
+
+public interface ISiteRepository : IRepository<Site>
+{
+    Task<IEnumerable<Site>> GetSitesDueForCheckAsync(int currentMinute, CancellationToken cancellationToken = default);
+
+    Task<int> UpdateSiteMetricsAsync(
+        Guid siteId,
+        LastStatus status,
+        int responseTime,
+        IList<int> responseTrendData,
+        decimal upTime,
+        decimal stability,
+        int p50,
+        int p90,
+        int p95,
+        int p99,
+        int sslExpiresInDays,
+        HealthStatus healthStatus,
+        DateTime lastCheckedAt,
+        CancellationToken cancellationToken = default);
+}

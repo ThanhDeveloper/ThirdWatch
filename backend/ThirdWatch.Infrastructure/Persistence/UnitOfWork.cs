@@ -19,12 +19,14 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         WebhookEndpoints = new WebhookEndpointRepository(_context);
         WebhookHistories = new WebHookHistoryRepository(_context);
         Notifications = new NotificationRepository(_context);
+        Sites = new SiteRepository(_context);
     }
 
     public IUserRepository Users { get; }
     public IWebhookEndpointRepository WebhookEndpoints { get; }
     public IWebhookHistoryRepository WebhookHistories { get; }
     public INotificationRepository Notifications { get; }
+    public ISiteRepository Sites { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);

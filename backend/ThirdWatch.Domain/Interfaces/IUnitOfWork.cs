@@ -6,6 +6,7 @@ public interface IUnitOfWork : IDisposable
     IWebhookEndpointRepository WebhookEndpoints { get; }
     IWebhookHistoryRepository WebhookHistories { get; }
     INotificationRepository Notifications { get; }
+    ISiteRepository Sites { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task ExecuteAsync(Func<Task> operation);

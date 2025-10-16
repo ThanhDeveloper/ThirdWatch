@@ -9,9 +9,11 @@ import {
   CodeBracketIcon,
   SparklesIcon,
   Bars3CenterLeftIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  CheckBadgeIcon
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables } from "@/pages/dashboard";
+import { HealthCheckDashboard } from "@/pages/dashboard/health-check";
 import { DataGenerator, Base64Tools, JsonUtilities, WebhookInspector } from "@/pages/dashboard/tools";
 import { SignIn, SignUp } from "@/pages/auth";
 import { Navigate } from "react-router-dom";
@@ -41,6 +43,12 @@ export const routes = [
         name: "tables",
         path: "/tables",
         element: <Tables />,
+      },
+      {
+        icon: <CheckBadgeIcon {...icon} />,
+        name: "health check",
+        path: "/health-check",
+        element: <HealthCheckDashboard />,
       },
       {
         icon: <WrenchScrewdriverIcon {...icon} />,

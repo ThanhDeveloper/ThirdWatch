@@ -10,7 +10,9 @@ using ThirdWatch.Infrastructure.Persistence;
 using ThirdWatch.Infrastructure.Persistence.Contexts;
 using ThirdWatch.Infrastructure.Persistence.Repositories;
 using ThirdWatch.Infrastructure.Services;
+using ThirdWatch.Infrastructure.Workers;
 using ThirdWatch.Shared.Helpers;
+using ThirdWatch.Shared.Options;
 
 namespace ThirdWatch.Infrastructure;
 
@@ -21,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
+        services.AddScoped<ISiteRepository, SiteRepository>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
         services.AddScoped<JwtHelper>();
@@ -33,6 +36,35 @@ public static class DependencyInjection
         services.AddAzureStorageServices(configuration);
 
         services.AddCacheServices(configuration);
+
+        services.AddHealthCheckServices(configuration);
+
+        services.AddHostedServices();
+
+        return services;
+    }
+
+    public static IServiceCollection AddHostedServices(this IServiceCollection services)
+    {
+        services
+            .AddHostedService<CleanUpDeletedWebhookHistoryFilesJob>()
+            .AddHostedService<HealthCheckJob>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddHealthCheckServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<HealthCheckOptions>(configuration.GetSection(HealthCheckOptions.SectionName));
+
+        services.AddHttpClient("HealthCheckClient", client =>
+        {
+            var settings = configuration.GetSection(HealthCheckOptions.SectionName).Get<HealthCheckOptions>();
+            client.Timeout = TimeSpan.FromSeconds(settings?.CheckTimeoutSeconds ?? 15);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ThirdWatch-HealthCheck/1.0");
+        });
+
+        services.AddScoped<IHealthCheckService, HealthCheckService>();
 
         return services;
     }
@@ -75,6 +107,8 @@ public static class DependencyInjection
             {
                 cfg.Host(massTransitConfig.ConnectionString);
 
+                cfg.ConcurrentMessageLimit = 100;
+
                 cfg.UseMessageRetry(retryConfig =>
                 {
                     retryConfig.Incremental(
@@ -82,6 +116,8 @@ public static class DependencyInjection
                         TimeSpan.FromSeconds(1),
                         TimeSpan.FromSeconds(massTransitConfig.Consumer.RetryDelaySeconds));
                 });
+
+                cfg.UseDelayedMessageScheduler();
 
                 cfg.ConfigureEndpoints(context);
             });
